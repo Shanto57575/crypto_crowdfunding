@@ -17,3 +17,9 @@ body {
 :hover.shadow {
     box-shadow: #39255d 0px 2px 6px 0px, #39255d 0px 2px 20px 0px;
 }
+
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
