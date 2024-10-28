@@ -9,10 +9,25 @@ const CreateCampaign = () => {
 	const [description, setDescription] = useState("");
 	const [target, setTarget] = useState("");
 	const [deadline, setDeadline] = useState("");
+	const [category, setCategory] = useState("MEDICAL_TREATMENT");
+	const [imageMethod, setImageMethod] = useState("upload"); // 'upload' or 'url'
+	const [imageUrl, setImageUrl] = useState("");
 	const [image, setImage] = useState(null);
 	const [imagePreview, setImagePreview] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
+
+	// Campaign categories mapping (zero-based index for enum)
+	const categories = [
+		{ id: "MEDICAL_TREATMENT", label: "Medical Treatment" },
+		{ id: "DISASTER_RELIEF", label: "Disaster Relief" },
+		{ id: "EDUCATION", label: "Education" },
+		{ id: "STARTUP_BUSINESS", label: "Startup Business" },
+		{ id: "CREATIVE_PROJECTS", label: "Creative Projects" },
+		{ id: "COMMUNITY_SERVICE", label: "Community Service" },
+		{ id: "TECHNOLOGY", label: "Technology" },
+		{ id: "ENVIRONMENTAL", label: "Environmental" },
+	];
 
 	const handleImageChange = (e) => {
 		const file = e.target.files[0];
@@ -27,8 +42,15 @@ const CreateCampaign = () => {
 		}
 	};
 
+	const handleUrlChange = (e) => {
+		const url = e.target.value;
+		setImageUrl(url);
+		setImagePreview(url);
+	};
+
 	const removeImage = () => {
 		setImage(null);
+		setImageUrl("");
 		setImagePreview("");
 		setError("");
 	};
@@ -39,8 +61,24 @@ const CreateCampaign = () => {
 		if (!target || parseFloat(target) <= 0)
 			return "Valid target amount is required";
 		if (!deadline) return "Deadline is required";
-		if (!image) return "Campaign image is required";
+		if (imageMethod === "upload" && !image) return "Campaign image is required";
+		if (imageMethod === "url" && !imageUrl) return "Image URL is required";
+
+		const deadlineDate = new Date(deadline);
+		if (deadlineDate <= new Date()) return "Deadline must be in the future";
+
 		return null;
+	};
+
+	const resetForm = () => {
+		setTitle("");
+		setDescription("");
+		setTarget("");
+		setDeadline("");
+		setCategory("MEDICAL_TREATMENT");
+		removeImage();
+		setImageMethod("upload");
+		setError("");
 	};
 
 	const createCampaign = async (event) => {
@@ -59,62 +97,83 @@ const CreateCampaign = () => {
 				throw new Error("Please install MetaMask to create a campaign");
 			}
 
-			await window.ethereum.request({ method: "eth_requestAccounts" });
-			const contract = await getContract();
+			// Get connected account
+			const accounts = await window.ethereum.request({
+				method: "eth_requestAccounts",
+			});
 
+			if (!accounts || accounts.length === 0) {
+				throw new Error("No connected account found");
+			}
+
+			const contract = await getContract();
 			if (!contract) {
 				throw new Error("Failed to load contract");
 			}
 
-			// Upload image to IPFS
-			const imageUpload = await uploadToIPFS(image);
-			if (!imageUpload) {
-				throw new Error("Failed to upload image");
+			// Handle image upload/URL
+			let finalImageUrls;
+			if (imageMethod === "upload" && image) {
+				const imageUpload = await uploadToIPFS(image);
+				if (!imageUpload || !imageUpload.url) {
+					throw new Error("Failed to upload image");
+				}
+				finalImageUrls = imageUpload.url;
+			} else if (imageMethod === "url" && imageUrl) {
+				finalImageUrls = imageUrl;
 			}
 
 			// Create and upload metadata
 			const metadata = {
 				title,
 				description,
-				image: imageUpload.url,
+				image: finalImageUrls,
+				owner: accounts[0],
+				createdAt: new Date().toISOString(),
 			};
 
-			// Convert metadata to file
 			const metadataBlob = new Blob([JSON.stringify(metadata)], {
 				type: "application/json",
 			});
-			const metadataFile = new File([metadataBlob], "metadata.json");
 
-			// Upload metadata to IPFS
-			const metadataUpload = await uploadToIPFS(metadataFile);
-			if (!metadataUpload) {
+			const metadataUpload = await uploadToIPFS(metadataBlob);
+			if (!metadataUpload || !metadataUpload.url) {
 				throw new Error("Failed to upload metadata");
 			}
 
-			console.log("metadata=>", metadataUpload);
-
-			// Parse target amount to Wei
+			// Convert target to Wei
 			const parsedTarget = ethers.parseEther(target.toString().trim());
 
 			// Convert deadline to Unix timestamp
 			const deadlineTimestamp = Math.floor(Date.parse(deadline) / 1000);
 
-			// Create campaign
+			// Get category index
+			const categoryIndex = categories.findIndex((cat) => cat.id === category);
+			if (categoryIndex === -1) {
+				throw new Error("Invalid category selected");
+			}
+
+			// Create campaign transaction
 			const tx = await contract.createCampaign(
-				metadataUpload.hash,
-				parsedTarget,
-				deadlineTimestamp
+				metadataUpload.url, // _metadataHash
+				parsedTarget, // _target
+				deadlineTimestamp, // _deadline
+				categoryIndex // _category
 			);
 
-			await tx.wait();
-			alert("Campaign created successfully!");
+			console.log("tx==>", tx);
 
-			// Reset form
-			setTitle("");
-			setDescription("");
-			setTarget("");
-			setDeadline("");
-			removeImage();
+			// Wait for transaction confirmation
+			const receipt = await tx.wait();
+
+			console.log("receipt==>", receipt);
+
+			if (receipt.status === 0) {
+				throw new Error("Transaction failed");
+			}
+
+			alert("Campaign created successfully!");
+			resetForm();
 		} catch (error) {
 			console.error("Error creating campaign:", error);
 			setError(error.message || "Failed to create campaign");
@@ -137,6 +196,7 @@ const CreateCampaign = () => {
 					</div>
 
 					<form onSubmit={createCampaign} className="space-y-4">
+						{/* Title field */}
 						<div>
 							<label
 								htmlFor="title"
@@ -147,13 +207,39 @@ const CreateCampaign = () => {
 							<input
 								id="title"
 								type="text"
+								placeholder="Your Campaign Title"
 								className="mt-1 block w-full bg-gray-950 text-white rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
 								disabled={isLoading}
+								maxLength={100}
 							/>
 						</div>
 
+						{/* Category Selection */}
+						<div>
+							<label
+								htmlFor="category"
+								className="block text-sm font-medium text-gray-400"
+							>
+								Campaign Category
+							</label>
+							<select
+								id="category"
+								className="mt-1 block w-full bg-gray-950 text-white rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+								value={category}
+								onChange={(e) => setCategory(e.target.value)}
+								disabled={isLoading}
+							>
+								{categories.map((cat) => (
+									<option key={cat.id} value={cat.id}>
+										{cat.label}
+									</option>
+								))}
+							</select>
+						</div>
+
+						{/* Description field */}
 						<div>
 							<label
 								htmlFor="description"
@@ -164,13 +250,16 @@ const CreateCampaign = () => {
 							<textarea
 								id="description"
 								rows={4}
+								placeholder="Your Campaign Description"
 								className="mt-1 block w-full rounded-md border-gray-300 bg-gray-950 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
 								disabled={isLoading}
+								maxLength={1000}
 							/>
 						</div>
 
+						{/* Target Amount field */}
 						<div>
 							<label
 								htmlFor="target"
@@ -183,6 +272,7 @@ const CreateCampaign = () => {
 								type="number"
 								step="0.0001"
 								min="0.0001"
+								placeholder="Target Amount"
 								className="mt-1 block w-full rounded-md bg-gray-950 text-white border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
 								value={target}
 								onChange={(e) => setTarget(e.target.value)}
@@ -190,6 +280,7 @@ const CreateCampaign = () => {
 							/>
 						</div>
 
+						{/* Deadline field */}
 						<div>
 							<label
 								htmlFor="deadline"
@@ -204,51 +295,117 @@ const CreateCampaign = () => {
 								value={deadline}
 								onChange={(e) => setDeadline(e.target.value)}
 								disabled={isLoading}
+								min={new Date().toISOString().split("T")[0]}
 							/>
 						</div>
 
+						{/* Image Upload Method Selection */}
+						<div>
+							<label className="block text-sm font-medium text-gray-400 mb-2">
+								Image Upload Method
+							</label>
+							<div className="flex space-x-4">
+								<label className="inline-flex items-center">
+									<input
+										type="radio"
+										className="form-radio"
+										name="imageMethod"
+										value="upload"
+										checked={imageMethod === "upload"}
+										onChange={(e) => setImageMethod(e.target.value)}
+										disabled={isLoading}
+									/>
+									<span className="ml-2 text-gray-400">Upload Image</span>
+								</label>
+								<label className="inline-flex items-center">
+									<input
+										type="radio"
+										className="form-radio"
+										name="imageMethod"
+										value="url"
+										checked={imageMethod === "url"}
+										onChange={(e) => setImageMethod(e.target.value)}
+										disabled={isLoading}
+									/>
+									<span className="ml-2 text-gray-400">Image URL</span>
+								</label>
+							</div>
+						</div>
+
+						{/* Image Upload/URL Input */}
 						<div>
 							<label className="block text-sm font-medium text-gray-400">
 								Campaign Image
 							</label>
-							<div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative">
-								{imagePreview ? (
-									<div className="relative w-full">
-										<img
-											src={imagePreview}
-											alt="Campaign preview"
-											className="w-full h-64 object-cover rounded-md"
-										/>
-										<button
-											type="button"
-											onClick={removeImage}
-											className="absolute top-2 right-2 text-xl p-3 font-sans bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
-											disabled={isLoading}
-										>
-											×
-										</button>
-									</div>
-								) : (
-									<div className="space-y-1 text-center">
-										<input
-											type="file"
-											accept="image/*"
-											onChange={handleImageChange}
-											className="hidden"
-											id="file-upload"
-											disabled={isLoading}
-										/>
-										<label
-											htmlFor="file-upload"
-											className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none"
-										>
-											<span className="p-3">Upload a file</span>
-										</label>
-									</div>
-								)}
-							</div>
+							{imageMethod === "upload" ? (
+								<div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative">
+									{imagePreview ? (
+										<div className="relative w-full">
+											<img
+												src={imagePreview}
+												alt="Campaign preview"
+												className="w-full h-64 object-cover rounded-md"
+											/>
+											<button
+												type="button"
+												onClick={removeImage}
+												className="absolute top-2 right-2 text-xl p-3 font-sans bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+												disabled={isLoading}
+											>
+												×
+											</button>
+										</div>
+									) : (
+										<div className="space-y-1 text-center">
+											<input
+												type="file"
+												accept="image/*"
+												onChange={handleImageChange}
+												className="hidden"
+												id="file-upload"
+												disabled={isLoading}
+											/>
+											<label
+												htmlFor="file-upload"
+												className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none"
+											>
+												<span className="p-3">Upload a file</span>
+											</label>
+										</div>
+									)}
+								</div>
+							) : (
+								<div>
+									<input
+										type="url"
+										className="mt-1 block w-full bg-gray-950 text-white rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+										placeholder="Enter image URL"
+										value={imageUrl}
+										onChange={handleUrlChange}
+										disabled={isLoading}
+									/>
+									{imagePreview && (
+										<div className="mt-2 relative">
+											<img
+												src={imagePreview}
+												alt="Campaign preview"
+												className="w-full h-64 object-cover rounded-md"
+											/>
+											<button
+												type="button"
+												onClick={removeImage}
+												className="absolute top-2 right-2 text-xl p-3 font-sans bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+												disabled={isLoading}
+											>
+												×
+											</button>
+										</div>
+									)}
+								</div>
+							)}
 						</div>
 
+						{/* Error Display */}
 						{error && (
 							<div
 								className="bg-rose-100 text-center border border-rose-400 text-rose-700 px-4 py-3 rounded relative"
@@ -258,6 +415,7 @@ const CreateCampaign = () => {
 							</div>
 						)}
 
+						{/* Submit Button */}
 						<div className="pt-4">
 							<button
 								type="submit"

@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import Main from "../Layout/Main";
 import Home from "../Pages/Home";
-import AllCampaigns from "../Components/AllCampaigns";
 import CampaignList from "../Components/CampaignList";
 import CreateCampaign from "../Components/CreateCampaign";
 
@@ -19,7 +18,7 @@ export const router = createBrowserRouter([
 				element: <CreateCampaign />,
 			},
 			{
-				path: "/campaign",
+				path: "/all-campaigns",
 				element: <CampaignList />,
 			},
 		],

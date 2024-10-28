@@ -1,18 +1,30 @@
 import { Link } from "react-router-dom";
+import { MdLogout } from "react-icons/md";
 import { CgProfile } from "react-icons/cg";
 import { IoSettingsOutline } from "react-icons/io5";
-import { MdLogout } from "react-icons/md";
+import { useWallet } from "../context/WalletContext";
 
 const Navbar = () => {
+	const { userAddress, connectWallet } = useWallet();
+
 	const menu = (
-		<ul className="flex gap-8">
+		<ul className="flex items-center gap-5 text-center">
 			<Link to="/">Home</Link>
 			<Link to="/create-campaign">Create Campaign</Link>
-			<Link to="/campaign">All Campaigns</Link>
-			<Link to="/">Dashboard</Link>
+			<Link to="/all-campaigns">All Campaigns</Link>
+			<Link to="/">
+				{userAddress ? (
+					<p>
+						Logged in as: {userAddress.slice(0, 4)}......
+						{userAddress.slice(38, 42)}
+					</p>
+				) : (
+					<button onClick={connectWallet}>Connect MetaMask</button>
+				)}
+			</Link>
 		</ul>
 	);
-	const user = "dummy";
+
 	return (
 		<div className="fixed w-full backdrop-blur-xl py-5 z-50 text-white">
 			<div className="w-3/4 mx-auto flex justify-between items-center">
@@ -21,7 +33,7 @@ const Navbar = () => {
 				</div>
 				{menu}
 				<div>
-					{user ? (
+					{userAddress ? (
 						<div className="bg-gradient-to-r from-[#303dab] via-[#714faf] to-[#b638d8] flex items-center gap-5 rounded-full">
 							<p className="pl-4 text-white font-semibold">John Doe</p>
 							<div className="dropdown dropdown-end">

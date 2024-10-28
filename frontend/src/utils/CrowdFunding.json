@@ -56,6 +56,12 @@
 				"internalType": "uint256",
 				"name": "deadline",
 				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "enum CrowdFunding.CampaignCategory",
+				"name": "category",
+				"type": "uint8"
 			}
 		],
 		"name": "CampaignCreated",
@@ -175,6 +181,11 @@
 				"internalType": "bool",
 				"name": "isActive",
 				"type": "bool"
+			},
+			{
+				"internalType": "enum CrowdFunding.CampaignCategory",
+				"name": "category",
+				"type": "uint8"
 			}
 		],
 		"stateMutability": "view",
@@ -209,6 +220,11 @@
 				"internalType": "uint256",
 				"name": "_deadline",
 				"type": "uint256"
+			},
+			{
+				"internalType": "enum CrowdFunding.CampaignCategory",
+				"name": "_category",
+				"type": "uint8"
 			}
 		],
 		"name": "createCampaign",
@@ -250,7 +266,7 @@
 	},
 	{
 		"inputs": [],
-		"name": "getAllCampaigns",
+		"name": "getActiveCampaigns",
 		"outputs": [
 			{
 				"components": [
@@ -288,6 +304,11 @@
 						"internalType": "bool",
 						"name": "isActive",
 						"type": "bool"
+					},
+					{
+						"internalType": "enum CrowdFunding.CampaignCategory",
+						"name": "category",
+						"type": "uint8"
 					}
 				],
 				"internalType": "struct CrowdFunding.Campaign[]",
@@ -342,6 +363,72 @@
 				"internalType": "bool",
 				"name": "isActive",
 				"type": "bool"
+			},
+			{
+				"internalType": "enum CrowdFunding.CampaignCategory",
+				"name": "category",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "enum CrowdFunding.CampaignCategory",
+				"name": "_category",
+				"type": "uint8"
+			}
+		],
+		"name": "getCampaignsByCategory",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "metadataHash",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "target",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "deadline",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amountCollected",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "claimed",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "isActive",
+						"type": "bool"
+					},
+					{
+						"internalType": "enum CrowdFunding.CampaignCategory",
+						"name": "category",
+						"type": "uint8"
+					}
+				],
+				"internalType": "struct CrowdFunding.Campaign[]",
+				"name": "",
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",

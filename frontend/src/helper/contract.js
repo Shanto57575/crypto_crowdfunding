@@ -8,9 +8,7 @@ export const getContract = async () => {
         if (!window.ethereum) return null;
 
         const provider = new ethers.BrowserProvider(window.ethereum);
-        console.log("provider=>", provider)
         const signer = await provider.getSigner(); // Added await here
-        console.log("signer=>", signer)
         const contract = new ethers.Contract(
             contractAddress,
             crowdFundingABI,

@@ -1,11 +1,4 @@
-import { useState } from "react";
 import HashLoader from "react-spinners/HashLoader";
-
-const override = {
-	display: "block",
-	margin: "0 auto",
-	borderColor: "red",
-};
 
 function Loader() {
 	return (
