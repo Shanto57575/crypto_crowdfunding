@@ -3,23 +3,27 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
 function Main() {
-    const location = useLocation();
+	const location = useLocation();
 
-    const shouldRenderHeaderFooter = ![
-        "/login",
-        "/dashboard",
-        "/signup",
-    ].includes(location.pathname);
+	const shouldRenderHeaderFooter = ![
+		"/login",
+		"/dashboard",
+		"/signup",
+	].includes(location.pathname);
 
-    return (
-        <div className="">
-            {shouldRenderHeaderFooter && <div className=""><Navbar /></div>}
-            <div className="min-h-[79vh]">
-                <Outlet />
-            </div>
-            {shouldRenderHeaderFooter && <Footer />}
-        </div>
-    );
+	return (
+		<div className="font-serif">
+			{shouldRenderHeaderFooter && (
+				<div className="">
+					<Navbar />
+				</div>
+			)}
+			<div className="min-h-[79vh]">
+				<Outlet />
+			</div>
+			{shouldRenderHeaderFooter && <Footer />}
+		</div>
+	);
 }
 
 export default Main;
