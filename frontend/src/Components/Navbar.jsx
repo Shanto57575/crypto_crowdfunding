@@ -12,6 +12,7 @@ const Navbar = () => {
 			<Link to="/">Home</Link>
 			<Link to="/create-campaign">Create Campaign</Link>
 			<Link to="/all-campaigns">All Campaigns</Link>
+			<Link to="/my-campaigns">My Campaigns</Link>
 			<Link to="/">
 				{userAddress ? (
 					<p>

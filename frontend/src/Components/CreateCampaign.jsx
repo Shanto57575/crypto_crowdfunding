@@ -3,6 +3,7 @@ import { useState } from "react";
 import { getContract } from "../helper/contract";
 import { uploadToIPFS } from "../helper/ipfsService";
 import Loader from "./Loader";
+import toast from "react-hot-toast";
 
 const CreateCampaign = () => {
 	const [title, setTitle] = useState("");
@@ -17,10 +18,9 @@ const CreateCampaign = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 
-	// Campaign categories mapping (zero-based index for enum)
 	const categories = [
-		{ id: "MEDICAL_TREATMENT", label: "Medical Treatment" },
 		{ id: "DISASTER_RELIEF", label: "Disaster Relief" },
+		{ id: "MEDICAL_TREATMENT", label: "Medical Treatment" },
 		{ id: "EDUCATION", label: "Education" },
 		{ id: "STARTUP_BUSINESS", label: "Startup Business" },
 		{ id: "CREATIVE_PROJECTS", label: "Creative Projects" },
@@ -75,7 +75,7 @@ const CreateCampaign = () => {
 		setDescription("");
 		setTarget("");
 		setDeadline("");
-		setCategory("MEDICAL_TREATMENT");
+		setCategory("DISASTER_RELIEF");
 		removeImage();
 		setImageMethod("upload");
 		setError("");
@@ -118,6 +118,7 @@ const CreateCampaign = () => {
 				if (!imageUpload || !imageUpload.url) {
 					throw new Error("Failed to upload image");
 				}
+				console.log("imageUpload", imageUpload);
 				finalImageUrls = imageUpload.url;
 			} else if (imageMethod === "url" && imageUrl) {
 				finalImageUrls = imageUrl;
@@ -143,12 +144,13 @@ const CreateCampaign = () => {
 
 			// Convert target to Wei
 			const parsedTarget = ethers.parseEther(target.toString().trim());
-
+			console.log("parsedTarget", parsedTarget);
 			// Convert deadline to Unix timestamp
 			const deadlineTimestamp = Math.floor(Date.parse(deadline) / 1000);
-
+			console.log("deadlineTimestamp", deadlineTimestamp);
 			// Get category index
 			const categoryIndex = categories.findIndex((cat) => cat.id === category);
+			console.log("categoryIndex", categoryIndex);
 			if (categoryIndex === -1) {
 				throw new Error("Invalid category selected");
 			}
@@ -172,7 +174,9 @@ const CreateCampaign = () => {
 				throw new Error("Transaction failed");
 			}
 
-			alert("Campaign created successfully!");
+			toast.success(
+				<p className="font-serif">Campaign created successfully!</p>
+			);
 			resetForm();
 		} catch (error) {
 			console.error("Error creating campaign:", error);
@@ -258,7 +262,6 @@ const CreateCampaign = () => {
 								maxLength={1000}
 							/>
 						</div>
-
 						{/* Target Amount field */}
 						<div>
 							<label
@@ -315,7 +318,9 @@ const CreateCampaign = () => {
 										onChange={(e) => setImageMethod(e.target.value)}
 										disabled={isLoading}
 									/>
-									<span className="ml-2 text-gray-400">Upload Image</span>
+									<span className="ml-2 text-gray-400 cursor-pointer">
+										Upload Image
+									</span>
 								</label>
 								<label className="inline-flex items-center">
 									<input
@@ -327,7 +332,9 @@ const CreateCampaign = () => {
 										onChange={(e) => setImageMethod(e.target.value)}
 										disabled={isLoading}
 									/>
-									<span className="ml-2 text-gray-400">Image URL</span>
+									<span className="ml-2 text-gray-400 cursor-pointer">
+										Image URL
+									</span>
 								</label>
 							</div>
 						</div>
@@ -367,9 +374,9 @@ const CreateCampaign = () => {
 											/>
 											<label
 												htmlFor="file-upload"
-												className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none"
+												className="relative px-4 py-2 cursor-pointer hover:border hover:bg-transparent font-medium rounded text-white bg-gray-950 duration-300 focus-within:outline-none"
 											>
-												<span className="p-3">Upload a file</span>
+												Upload a file
 											</label>
 										</div>
 									)}
@@ -422,7 +429,7 @@ const CreateCampaign = () => {
 								disabled={isLoading}
 								className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-950 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed"
 							>
-								{isLoading ? <Loader /> : "Create Campaign"}
+								{isLoading ? <Loader sz={25} /> : "Create Campaign"}
 							</button>
 						</div>
 					</form>

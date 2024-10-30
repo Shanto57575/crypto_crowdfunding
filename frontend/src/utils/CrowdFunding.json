@@ -59,9 +59,9 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "enum CrowdFunding.CampaignCategory",
+				"internalType": "string",
 				"name": "category",
-				"type": "uint8"
+				"type": "string"
 			}
 		],
 		"name": "CampaignCreated",
@@ -119,9 +119,46 @@
 				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "donationIndex",
+				"type": "uint256"
 			}
 		],
 		"name": "DonationReceived",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "campaignId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "donor",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "donationIndex",
+				"type": "uint256"
+			}
+		],
+		"name": "DonationRefunded",
 		"type": "event"
 	},
 	{
@@ -183,9 +220,9 @@
 				"type": "bool"
 			},
 			{
-				"internalType": "enum CrowdFunding.CampaignCategory",
+				"internalType": "string",
 				"name": "category",
-				"type": "uint8"
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",
@@ -222,8 +259,8 @@
 				"type": "uint256"
 			},
 			{
-				"internalType": "enum CrowdFunding.CampaignCategory",
-				"name": "_category",
+				"internalType": "uint8",
+				"name": "_categoryIndex",
 				"type": "uint8"
 			}
 		],
@@ -306,12 +343,12 @@
 						"type": "bool"
 					},
 					{
-						"internalType": "enum CrowdFunding.CampaignCategory",
+						"internalType": "string",
 						"name": "category",
-						"type": "uint8"
+						"type": "string"
 					}
 				],
-				"internalType": "struct CrowdFunding.Campaign[]",
+				"internalType": "struct CrowdFunding.CampaignInfo[]",
 				"name": "",
 				"type": "tuple[]"
 			}
@@ -330,44 +367,51 @@
 		"name": "getCampaignDetails",
 		"outputs": [
 			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "metadataHash",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "target",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "deadline",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amountCollected",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "claimed",
-				"type": "bool"
-			},
-			{
-				"internalType": "bool",
-				"name": "isActive",
-				"type": "bool"
-			},
-			{
-				"internalType": "enum CrowdFunding.CampaignCategory",
-				"name": "category",
-				"type": "uint8"
+				"components": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "metadataHash",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "target",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "deadline",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amountCollected",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "claimed",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "isActive",
+						"type": "bool"
+					},
+					{
+						"internalType": "string",
+						"name": "category",
+						"type": "string"
+					}
+				],
+				"internalType": "struct CrowdFunding.CampaignInfo",
+				"name": "",
+				"type": "tuple"
 			}
 		],
 		"stateMutability": "view",
@@ -376,9 +420,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "enum CrowdFunding.CampaignCategory",
+				"internalType": "string",
 				"name": "_category",
-				"type": "uint8"
+				"type": "string"
 			}
 		],
 		"name": "getCampaignsByCategory",
@@ -421,17 +465,125 @@
 						"type": "bool"
 					},
 					{
-						"internalType": "enum CrowdFunding.CampaignCategory",
+						"internalType": "string",
 						"name": "category",
-						"type": "uint8"
+						"type": "string"
 					}
 				],
-				"internalType": "struct CrowdFunding.Campaign[]",
+				"internalType": "struct CrowdFunding.CampaignInfo[]",
 				"name": "",
 				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_owner",
+				"type": "address"
+			}
+		],
+		"name": "getCampaignsByOwner",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "metadataHash",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "target",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "deadline",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amountCollected",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "claimed",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "isActive",
+						"type": "bool"
+					},
+					{
+						"internalType": "string",
+						"name": "category",
+						"type": "string"
+					}
+				],
+				"internalType": "struct CrowdFunding.CampaignInfo[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "ownerToCampaigns",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_campaignId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_donor",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_donationIndex",
+				"type": "uint256"
+			}
+		],
+		"name": "refundDonation",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{

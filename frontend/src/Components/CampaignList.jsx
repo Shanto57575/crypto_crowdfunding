@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { getContract } from "../helper/contract";
 import Loader from "./Loader";
+import toast from "react-hot-toast";
 
 const CampaignList = () => {
 	const [campaigns, setCampaigns] = useState([]);
@@ -71,8 +72,9 @@ const CampaignList = () => {
 				value: ethers.parseEther(amount),
 			});
 			await tx.wait();
-
-			getAllCampaigns(); // Refresh campaigns after donation
+			console.log("tx from donation=>", tx);
+			toast.success(<p className="font-serif">Donation Successfull</p>);
+			getAllCampaigns();
 		} catch (err) {
 			console.error("Error donating:", err);
 			alert(err.message || "Failed to donate");
@@ -88,7 +90,7 @@ const CampaignList = () => {
 	if (loading)
 		return (
 			<div className="min-h-screen bg-gray-950 flex justify-center items-center">
-				<Loader />
+				<Loader sz={100} />
 			</div>
 		);
 
@@ -214,9 +216,11 @@ const CampaignList = () => {
 													}
 													className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
 												>
-													{loadingCampaigns[campaign.id]
-														? "Loading..."
-														: "Donate"}
+													{loadingCampaigns[campaign.id] ? (
+														<Loader sz={25} />
+													) : (
+														"Donate"
+													)}
 												</button>
 											</div>
 										)}
