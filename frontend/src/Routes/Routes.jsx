@@ -3,6 +3,8 @@ import Main from "../Layout/Main";
 import Home from "../Pages/Home";
 import CampaignList from "../Components/CampaignList";
 import CreateCampaign from "../Components/CreateCampaign";
+import PrivateRoutes from "./PrivateRoutes";
+import MyCampaign from "../Components/MyCampaign";
 
 export const router = createBrowserRouter([
 	{
@@ -18,8 +20,17 @@ export const router = createBrowserRouter([
 				element: <CreateCampaign />,
 			},
 			{
-				path: "/all-campaigns",
-				element: <CampaignList />,
+				element: <PrivateRoutes />,
+				children: [
+					{
+						path: "/my-campaigns",
+						element: <MyCampaign />,
+					},
+					{
+						path: "/all-campaigns",
+						element: <CampaignList />,
+					},
+				],
 			},
 		],
 	},
