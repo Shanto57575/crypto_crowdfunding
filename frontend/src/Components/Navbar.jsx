@@ -1,92 +1,109 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
-import { Menu, X, Wallet, ChevronDown, LogOut } from "lucide-react";
+import {
+	Menu,
+	X,
+	Wallet,
+	LogOut,
+	Home,
+	PlusCircle,
+	Users,
+	Compass,
+} from "lucide-react";
 
 const Navbar = () => {
-	const { userAddress, connectWallet } = useWallet();
+	const { userAddress, connectWallet, disconnect } = useWallet();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const location = useLocation();
 
 	const userMenu = [
-		{ name: "Create Campaign", path: "/create-campaign" },
-		{ name: "All Campaigns", path: "/all-campaigns" },
-		{ name: "My Campaigns", path: "/my-campaigns" },
+		{ name: "Home", path: "/", icon: Home },
+		{ name: "Explore Campaigns", path: "/all-campaigns", icon: Compass },
+		{ name: "Create Campaigns", path: "/create-campaign", icon: PlusCircle },
+		{ name: "My Campaigns", path: "/my-campaigns", icon: Users },
 	];
 
+	const AddressDisplay = ({ address, className = "" }) => (
+		<div className={`flex items-center space-x-2 ${className}`}>
+			<div className="w-3 h-3 bg-emerald-300 rounded-full animate-pulse"></div>
+			<span className="text-sm font-medium text-gray-300 tracking-wider">
+				{address.slice(0, 6)}...{address.slice(-4)}
+			</span>
+		</div>
+	);
+
 	return (
-		<nav className="bg-gray-900 border-b border-gray-800 fixed w-full z-50">
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="flex justify-between h-16">
+		<nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a1a] bg-opacity-95 backdrop-blur-xl shadow-2xl border-b border-gray-800">
+			<div className="container mx-auto px-4 py-3 2xl:px-16">
+				<div className="flex justify-between items-center">
 					{/* Logo Section */}
-					<div className="flex items-center">
-						<Link to="/" className="flex items-center space-x-2">
-							<div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-								<span className="text-white font-bold text-xl">F</span>
-							</div>
-							<span className="text-xl font-bold text-white hidden sm:block">
-								FundChain
+					<Link to="/" className="flex items-center space-x-3">
+						<div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-tr from-blue-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
+							<span className="text-white font-bold text-2xl md:text-3xl">
+								F
 							</span>
-						</Link>
-					</div>
+						</div>
+						<h1 className="text-2xl md:text-3xl font-bold text-gray-100 tracking-tight hidden md:block">
+							FundChain
+						</h1>
+					</Link>
 
 					{/* Desktop Navigation */}
-					<div className="hidden md:flex md:items-center md:space-x-4">
-						{userAddress ? (
-							<div className="relative">
-								<button
-									onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-									className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-colors"
+					<div className="hidden md:flex items-center justify-center text-center space-x-6 xl:space-x-8">
+						{/* Navigation Links */}
+						<div className="flex space-x-1 xl:space-x-2">
+							{userMenu.map((item) => (
+								<Link
+									key={item.name}
+									to={item.path}
+									className={`group px-3 py-2 rounded-lg flex items-center space-x-2 transition ${
+										location.pathname === item.path
+											? "bg-gray-800 text-white"
+											: "text-gray-400 hover:bg-gray-800 hover:text-gray-100"
+									}`}
 								>
-									<span className="text-sm font-medium">
-										{userAddress.slice(0, 4)}...{userAddress.slice(38, 42)}
-									</span>
-									<ChevronDown className="h-4 w-4" />
-								</button>
+									<item.icon
+										className={`h-5 w-5 ${
+											location.pathname === item.path
+												? "text-blue-400"
+												: "text-gray-500 group-hover:text-blue-400"
+										}`}
+									/>
+									<span className="text-sm font-medium">{item.name}</span>
+								</Link>
+							))}
+						</div>
 
-								{isDropdownOpen && (
-									<div className="absolute right-0 mt-2 w-56 rounded-lg bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5">
-										<div className="py-1">
-											{userMenu.map((item) => (
-												<Link
-													key={item.name}
-													to={item.path}
-													className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-													onClick={() => setIsDropdownOpen(false)}
-												>
-													{item.name}
-												</Link>
-											))}
-											<button
-												className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 flex items-center space-x-2"
-												onClick={() => {
-													// Add logout logic here
-													setIsDropdownOpen(false);
-												}}
-											>
-												<LogOut className="h-4 w-4" />
-												<span>Disconnect</span>
-											</button>
-										</div>
-									</div>
-								)}
+						{/* Wallet Connection */}
+						{userAddress ? (
+							<div className="flex items-center space-x-4 pl-4 border-l border-gray-700">
+								<AddressDisplay address={userAddress} />
+								<button
+									onClick={disconnect}
+									className="text-red-400 hover:text-red-500 transition"
+									aria-label="Disconnect Wallet"
+								>
+									<LogOut className="h-5 w-5" />
+								</button>
 							</div>
 						) : (
 							<button
 								onClick={connectWallet}
-								className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all"
+								className="px-4 py-2.5 rounded bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-purple-800 transition transform hover:scale-105 flex items-center space-x-2 shadow-md"
 							>
-								<Wallet className="h-4 w-4 mr-2" />
-								Connect Wallet
+								<Wallet className="h-5 w-5" />
+								<span>Connect Wallet</span>
 							</button>
 						)}
 					</div>
 
-					{/* Mobile menu button */}
-					<div className="flex items-center md:hidden">
+					{/* Mobile Menu Toggle */}
+					<div className="md:hidden">
 						<button
 							onClick={() => setIsMenuOpen(!isMenuOpen)}
-							className="inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
+							className="text-gray-300 hover:text-white transition"
+							aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
 						>
 							{isMenuOpen ? (
 								<X className="h-6 w-6" />
@@ -96,53 +113,65 @@ const Navbar = () => {
 						</button>
 					</div>
 				</div>
-			</div>
 
-			{/* Mobile menu */}
-			{isMenuOpen && (
-				<div className="md:hidden bg-gray-800">
-					<div className="px-2 pt-2 pb-3 space-y-1">
-						{userAddress ? (
-							<>
-								<div className="px-3 py-2 text-sm font-medium text-gray-400 border-b border-gray-700">
-									{userAddress.slice(0, 4)}...{userAddress.slice(38, 42)}
-								</div>
-								{userMenu.map((item) => (
-									<Link
-										key={item.name}
-										to={item.path}
-										className="block px-3 py-2 rounded-lg text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-										onClick={() => setIsMenuOpen(false)}
+				{/* Mobile Menu */}
+				{isMenuOpen && (
+					<div className="md:hidden absolute left-0 right-0 top-full bg-[#0a0a1a] shadow-2xl border-t border-gray-800">
+						<div className="px-4 py-6 space-y-3">
+							{userAddress ? (
+								<>
+									<AddressDisplay
+										address={userAddress}
+										className="mb-4 pb-3 border-b border-gray-700 text-center"
+									/>
+									{userMenu.map((item) => (
+										<Link
+											key={item.name}
+											to={item.path}
+											onClick={() => setIsMenuOpen(false)}
+											className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+												location.pathname === item.path
+													? "bg-gray-800 text-white"
+													: "hover:bg-gray-800 text-gray-400 hover:text-white"
+											}`}
+										>
+											<item.icon
+												className={`h-6 w-6 ${
+													location.pathname === item.path
+														? "text-blue-400"
+														: "text-gray-500"
+												}`}
+											/>
+											<span>{item.name}</span>
+										</Link>
+									))}
+									<button
+										onClick={() => {
+											disconnect();
+											setIsMenuOpen(false);
+										}}
+										className="w-full flex items-center justify-center space-x-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-950 hover:text-red-300 transition"
 									>
-										{item.name}
-									</Link>
-								))}
+										<LogOut className="h-6 w-6" />
+										<span>Disconnect</span>
+									</button>
+								</>
+							) : (
 								<button
-									className="w-full text-left px-3 py-2 text-base font-medium text-red-400 hover:text-red-300 hover:bg-gray-700 rounded-lg flex items-center space-x-2"
 									onClick={() => {
-										// Add logout logic here
+										connectWallet();
 										setIsMenuOpen(false);
 									}}
+									className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition flex items-center justify-center space-x-2"
 								>
-									<LogOut className="h-4 w-4" />
-									<span>Disconnect</span>
+									<Wallet className="h-6 w-6" />
+									<span>Connect Wallet</span>
 								</button>
-							</>
-						) : (
-							<button
-								onClick={() => {
-									connectWallet();
-									setIsMenuOpen(false);
-								}}
-								className="w-full flex items-center px-3 py-2 rounded-lg text-base font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-							>
-								<Wallet className="h-4 w-4 mr-2" />
-								Connect Wallet
-							</button>
-						)}
+							)}
+						</div>
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 		</nav>
 	);
 };

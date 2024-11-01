@@ -90,8 +90,6 @@ const CreateCampaign = () => {
 			const campaignId =
 				"0x" + (timestamp + random).padEnd(64, "abcdef123456789");
 
-			console.log("Campaign ID:", campaignId);
-
 			const validationError = validateForm();
 			if (validationError) {
 				setError(validationError);

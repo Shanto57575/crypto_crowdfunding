@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { X, Loader2, Image as ImageIcon } from "lucide-react";
-import { ethers } from "ethers";
+import { X, Loader2, Image as ImageIcon, Calendar, Coins } from "lucide-react";
+import { parseEther, formatEther } from "ethers";
 import { getContract } from "../helper/contract";
 import { uploadToIPFS } from "../helper/ipfsService";
-import toast from "react-hot-toast";
 
 const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 	const [formData, setFormData] = useState({
@@ -15,6 +14,7 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 	});
 
 	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
 	const [imagePreview, setImagePreview] = useState("");
 	const [image, setImage] = useState(null);
 	const [imageMethod, setImageMethod] = useState("url");
@@ -22,36 +22,37 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 	useEffect(() => {
 		if (campaign) {
 			setFormData({
-				title: campaign.title || "",
-				description: campaign.description || "",
-				target: campaign.target || "",
-				image: campaign.image || "",
-				deadline: new Date(campaign.deadline).toISOString().split("T")[0] || "",
+				title: campaign.metadataHash.title || "",
+				description: campaign.metadataHash.description || "",
+				target: formatEther(campaign.target || "0"),
+				image: campaign.metadataHash.image || "",
+				deadline: new Date(Number(campaign.deadline) * 1000)
+					.toISOString()
+					.split("T")[0],
 			});
-			setImagePreview(campaign.image);
+			setImagePreview(campaign.metadataHash.image);
 		}
 	}, [campaign]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setLoading(true);
+		setError("");
 
 		try {
 			const contract = await getContract();
-			if (!contract) throw new Error("Failed to load contract");
+			if (!contract) throw new Error("Contract connection failed");
 
-			// Handle image upload/URL
 			let finalImageUrl = formData.image;
 			if (imageMethod === "upload" && image) {
 				const imageUpload = await uploadToIPFS(image);
-				if (!imageUpload?.url) throw new Error("Failed to upload image");
+				if (!imageUpload?.url) throw new Error("Image upload failed");
 				finalImageUrl = imageUpload.url;
 			}
 
-			// Create and upload metadata
 			const metadata = {
-				title: formData.title,
-				description: formData.description,
+				title: formData.title.trim(),
+				description: formData.description.trim(),
 				image: finalImageUrl,
 			};
 
@@ -59,12 +60,9 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 				type: "application/json",
 			});
 			const metadataUpload = await uploadToIPFS(metadataBlob);
-			if (!metadataUpload?.url) throw new Error("Failed to upload metadata");
+			if (!metadataUpload?.url) throw new Error("Metadata upload failed");
 
-			const targetAmount = ethers.parseUnits(
-				formData.target.toString(),
-				"ether"
-			);
+			const targetAmount = parseEther(formData.target);
 			const deadlineTimestamp = Math.floor(
 				new Date(formData.deadline).getTime() / 1000
 			);
@@ -77,180 +75,217 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 			);
 
 			await tx.wait();
-			toast.success("Campaign updated successfully!");
 			onUpdateSuccess();
 			onClose();
 		} catch (err) {
-			console.error("Error updating campaign:", err);
-			toast.error(err.message || "Failed to update campaign");
+			console.error("Campaign update failed:", err);
+			setError(err.message || "Failed to update campaign");
 		} finally {
 			setLoading(false);
 		}
 	};
 
 	const handleImageChange = (e) => {
-		if (e.target.files?.[0]) {
-			setImage(e.target.files[0]);
+		const file = e.target.files?.[0];
+		if (file) {
+			if (file.size > 5 * 1024 * 1024) {
+				setError("Image must be less than 5MB");
+				return;
+			}
+			setImage(file);
 			const reader = new FileReader();
 			reader.onloadend = () => setImagePreview(reader.result);
-			reader.readAsDataURL(e.target.files[0]);
+			reader.readAsDataURL(file);
 		}
 	};
 
 	if (!isOpen) return null;
 
 	return (
-		<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-			<div className="bg-gray-900 rounded-2xl w-full max-w-4xl relative flex">
-				{/* Image Preview Section */}
-				<div className="w-1/3 p-6 bg-gray-800 rounded-l-2xl flex flex-col items-center justify-center relative">
-					<button
-						onClick={onClose}
-						className="absolute right-4 top-4 text-gray-400 hover:text-white"
-					>
-						<X className="w-6 h-6" />
-					</button>
+		<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+			<div className="bg-gray-900 rounded-xl w-full max-w-3xl overflow-y-auto max-h-[90vh] relative animate-in fade-in duration-300">
+				{/* Close button for mobile */}
+				<button
+					onClick={onClose}
+					className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors z-10"
+				>
+					<X className="w-6 h-6" />
+				</button>
 
-					{imagePreview ? (
-						<div className="w-64 h-64 rounded-xl overflow-hidden mb-4 shadow-lg">
-							<img
-								src={imagePreview}
-								alt="Campaign Preview"
-								className="w-full h-full object-cover"
-							/>
+				<div className="flex flex-col lg:flex-row">
+					{/* Image Section */}
+					<div className="w-full lg:w-2/5 p-6 border-b lg:border-b-0 lg:border-r border-gray-700">
+						<h3 className="text-xl font-semibold text-white mb-6">
+							Campaign Image
+						</h3>
+
+						<div className="aspect-square rounded-xl overflow-hidden bg-gray-800 mb-4 shadow-lg ring-1 ring-gray-700">
+							{imagePreview ? (
+								<img
+									src={imagePreview}
+									alt="Preview"
+									className="w-full h-full object-cover"
+								/>
+							) : (
+								<div className="w-full h-full flex items-center justify-center">
+									<ImageIcon className="w-16 h-16 text-gray-600" />
+								</div>
+							)}
 						</div>
-					) : (
-						<div className="w-64 h-64 bg-gray-700 rounded-xl flex items-center justify-center">
-							<ImageIcon className="w-16 h-16 text-gray-500" />
+
+						<div className="space-y-4">
+							<div>
+								<label className="block text-sm font-medium text-gray-300 mb-2">
+									Image Source
+								</label>
+								<select
+									value={imageMethod}
+									onChange={(e) => setImageMethod(e.target.value)}
+									className="w-full rounded-lg bg-gray-800 text-white border border-gray-700 p-2.5 focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+								>
+									<option value="url">Image URL</option>
+									<option value="upload">Upload Image</option>
+								</select>
+							</div>
+
+							{imageMethod === "url" ? (
+								<input
+									type="url"
+									value={formData.image}
+									onChange={(e) =>
+										setFormData((prev) => ({ ...prev, image: e.target.value }))
+									}
+									placeholder="Enter image URL"
+									className="w-full rounded-lg bg-gray-800 text-white border border-gray-700 p-2.5 focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+								/>
+							) : (
+								<div>
+									<input
+										type="file"
+										accept="image/*"
+										onChange={handleImageChange}
+										className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition-all cursor-pointer"
+									/>
+									<span className="text-xs text-gray-500 mt-1 block">
+										Max size: 5MB
+									</span>
+								</div>
+							)}
 						</div>
-					)}
+					</div>
 
-					<div className="mt-4 w-full">
-						<label className="block text-sm font-medium text-gray-400 mb-2">
-							Image Method
-						</label>
-						<select
-							value={imageMethod}
-							onChange={(e) => setImageMethod(e.target.value)}
-							className="w-full rounded-xl bg-gray-700 text-white border-gray-600 p-2 focus:ring-2 focus:ring-indigo-500"
-						>
-							<option value="url">URL</option>
-							<option value="upload">Upload</option>
-						</select>
+					{/* Form Section */}
+					<div className="w-full lg:w-3/5 p-6">
+						<h2 className="text-xl font-bold text-white mb-6">
+							Update Campaign
+						</h2>
 
-						{imageMethod === "url" ? (
-							<input
-								type="url"
-								className="mt-2 w-full rounded-xl bg-gray-700 text-white border-gray-600 p-2 focus:ring-2 focus:ring-indigo-500"
-								value={formData.image}
-								onChange={(e) =>
-									setFormData((prev) => ({ ...prev, image: e.target.value }))
-								}
-								placeholder="Enter image URL"
-								required
-							/>
-						) : (
-							<input
-								type="file"
-								accept="image/*"
-								onChange={handleImageChange}
-								className="mt-2 w-full text-gray-400 file:mr-4 file:rounded-xl file:border-0 file:bg-indigo-600 file:text-white file:px-4 file:py-2"
-							/>
+						{error && (
+							<div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500 text-sm">
+								{error}
+							</div>
 						)}
+
+						<form onSubmit={handleSubmit} className="space-y-4">
+							<div>
+								<label className="block text-sm font-medium text-gray-300 mb-2">
+									Campaign Title
+								</label>
+								<input
+									type="text"
+									value={formData.title}
+									onChange={(e) =>
+										setFormData((prev) => ({ ...prev, title: e.target.value }))
+									}
+									className="w-full rounded-lg bg-gray-800 text-white border border-gray-700 p-2.5 focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+									placeholder="Enter campaign title"
+									required
+								/>
+							</div>
+
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<div>
+									<label className="block text-sm font-medium text-gray-300 mb-2">
+										Target Amount (ETH)
+									</label>
+									<div className="relative">
+										<Coins className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+										<input
+											type="number"
+											step="0.000000000000000001"
+											value={formData.target}
+											onChange={(e) =>
+												setFormData((prev) => ({
+													...prev,
+													target: e.target.value,
+												}))
+											}
+											className="w-full rounded-lg bg-gray-800 text-white border border-gray-700 p-2.5 pl-10 focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+											placeholder="0.00"
+											required
+										/>
+									</div>
+								</div>
+
+								<div>
+									<label className="block text-sm font-medium text-gray-300 mb-2">
+										Deadline
+									</label>
+									<div className="relative">
+										<Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+										<input
+											type="date"
+											value={formData.deadline}
+											onChange={(e) =>
+												setFormData((prev) => ({
+													...prev,
+													deadline: e.target.value,
+												}))
+											}
+											min={new Date().toISOString().split("T")[0]}
+											className="w-full rounded-lg bg-gray-800 text-white border border-gray-700 p-2.5 pl-10 focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+											required
+										/>
+									</div>
+								</div>
+							</div>
+
+							<div>
+								<label className="block text-sm font-medium text-gray-300 mb-2">
+									Description
+								</label>
+								<textarea
+									value={formData.description}
+									onChange={(e) =>
+										setFormData((prev) => ({
+											...prev,
+											description: e.target.value,
+										}))
+									}
+									rows={3}
+									className="w-full rounded-lg bg-gray-800 text-white border border-gray-700 p-2.5 focus:ring-2 focus:ring-indigo-500 transition-all resize-none outline-none"
+									placeholder="Describe your campaign..."
+									required
+								/>
+							</div>
+
+							<button
+								type="submit"
+								disabled={loading}
+								className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+							>
+								{loading ? (
+									<>
+										<Loader2 className="w-5 h-5 animate-spin" />
+										<span>Updating Campaign...</span>
+									</>
+								) : (
+									"Update Campaign"
+								)}
+							</button>
+						</form>
 					</div>
 				</div>
-
-				{/* Form Section */}
-				<form onSubmit={handleSubmit} className="w-2/3 p-6 space-y-4">
-					<h2 className="text-2xl font-bold text-white mb-6">
-						Update Campaign
-					</h2>
-
-					<div className="grid grid-cols-2 gap-4">
-						{/* Title Input */}
-						<div>
-							<label className="block text-sm font-medium text-gray-400">
-								Campaign Title
-							</label>
-							<input
-								type="text"
-								className="mt-1 w-full rounded-xl bg-gray-800 text-white border-gray-700 p-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-								value={formData.title}
-								onChange={(e) =>
-									setFormData((prev) => ({ ...prev, title: e.target.value }))
-								}
-								required
-							/>
-						</div>
-
-						{/* Target Input */}
-						<div>
-							<label className="block text-sm font-medium text-gray-400">
-								Funding Target (ETH)
-							</label>
-							<input
-								type="number"
-								className="mt-1 w-full rounded-xl bg-gray-800 text-white border-gray-700 p-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-								value={formData.target}
-								onChange={(e) =>
-									setFormData((prev) => ({ ...prev, target: e.target.value }))
-								}
-								required
-							/>
-						</div>
-
-						{/* Deadline Input */}
-						<div>
-							<label className="block text-sm font-medium text-gray-400">
-								Campaign Deadline
-							</label>
-							<input
-								type="date"
-								className="mt-1 w-full rounded-xl bg-gray-800 text-white border-gray-700 p-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-								value={formData.deadline}
-								onChange={(e) =>
-									setFormData((prev) => ({ ...prev, deadline: e.target.value }))
-								}
-								min={new Date().toISOString().split("T")[0]}
-								required
-							/>
-						</div>
-
-						{/* Description Input */}
-						<div className="col-span-2">
-							<label className="block text-sm font-medium text-gray-400">
-								Description
-							</label>
-							<textarea
-								className="mt-1 w-full rounded-xl bg-gray-800 text-white border-gray-700 p-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-								value={formData.description}
-								onChange={(e) =>
-									setFormData((prev) => ({
-										...prev,
-										description: e.target.value,
-									}))
-								}
-								required
-								rows={4}
-							/>
-						</div>
-					</div>
-
-					<button
-						type="submit"
-						disabled={loading}
-						className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50"
-					>
-						{loading ? (
-							<>
-								<Loader2 className="w-4 h-4 animate-spin" />
-								<span>Updating...</span>
-							</>
-						) : (
-							"Update Campaign"
-						)}
-					</button>
-				</form>
 			</div>
 		</div>
 	);

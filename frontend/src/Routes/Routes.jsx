@@ -6,7 +6,6 @@ import CreateCampaign from "../Components/CreateCampaign";
 import PrivateRoutes from "./PrivateRoutes";
 import MyCampaign from "../Components/MyCampaign";
 import ViewDetails from "../Components/ViewDetails";
-import UpdateCampaign from "../Components/UpdateCampaign";
 
 export const router = createBrowserRouter([
 	{
@@ -22,10 +21,6 @@ export const router = createBrowserRouter([
 				element: <CreateCampaign />,
 			},
 			{
-				path: "/update-campaign",
-				element: <UpdateCampaign />,
-			},
-			{
 				element: <PrivateRoutes />,
 				children: [
 					{
@@ -37,7 +32,7 @@ export const router = createBrowserRouter([
 						element: <CampaignList />,
 					},
 					{
-						path: "/my-campaigns/view-details/:id",
+						path: "/all-campaigns/view-details/:id",
 						element: <ViewDetails />,
 					},
 				],

@@ -8,15 +8,12 @@ export const getContract = async () => {
         if (!window.ethereum) return null;
 
         const provider = new ethers.BrowserProvider(window.ethereum);
-        console.log("provider=>", provider)
         const signer = await provider.getSigner();
-        console.log("signer=>", signer)
         const contract = new ethers.Contract(
             contractAddress,
             crowdFundingABI,
             signer
         );
-        console.log("contract=>", contract)
         return contract;
     } catch (error) {
         console.error("Failed to load contract:", error);

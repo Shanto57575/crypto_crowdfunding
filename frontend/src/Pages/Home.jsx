@@ -22,6 +22,8 @@ import {
 	Phone,
 	MapPin,
 	ArrowBigUp,
+	CheckCircle,
+	Send,
 } from "lucide-react";
 
 const benefits = [
@@ -98,9 +100,48 @@ const faqs = [
 	},
 ];
 
+const contactInfo = [
+	{
+		icon: Mail,
+		title: "Email Us",
+		lines: ["support@platform.com", "business@platform.com"],
+		color: "purple",
+	},
+	{
+		icon: Phone,
+		title: "Call Us",
+		lines: ["+1 (555) 123-4567", "Mon-Fri 9AM-6PM EST"],
+		color: "pink",
+	},
+	{
+		icon: MapPin,
+		title: "Visit Us",
+		lines: ["123 Blockchain Street", "Crypto City, CC 12345"],
+		color: "orange",
+	},
+];
+
 const Home = () => {
 	const [isVisible, setIsVisible] = useState(false);
 	const [activeAccordion, setActiveAccordion] = useState(0);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isSuccess, setIsSuccess] = useState(false);
+	const [formData, setFormData] = useState({
+		name: "",
+		email: "",
+		message: "",
+	});
+
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		setIsSubmitting(true);
+		// Simulate form submission
+		setTimeout(() => {
+			setIsSubmitting(false);
+			setIsSuccess(true);
+			setTimeout(() => setIsSuccess(false), 3000);
+		}, 1500);
+	};
 
 	const toggleVisibility = () => {
 		if (window.scrollY > 300) {
@@ -139,7 +180,7 @@ const Home = () => {
 
 				<div className="container mx-auto px-6 relative z-10">
 					<div className="text-center max-w-4xl mx-auto">
-						<h1 className="text-7xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-orange-500 drop-shadow-2xl">
+						<h1 className="text-5xl md:text-7xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-orange-500 drop-shadow-2xl">
 							Fund the Future
 						</h1>
 						<p className="text-2xl mb-6 text-gray-100 font-light">
@@ -150,16 +191,16 @@ const Home = () => {
 							projects, support creators, and earn rewards through blockchain
 							technology.
 						</p>
-						<div className="flex justify-center gap-6">
+						<div className="flex flex-col md:flex-row items-center justify-center gap-6">
 							<Link
 								to="/all-campaigns"
-								className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-semibold flex items-center gap-2 transform hover:scale-105 transition-all"
+								className="bg-gradient-to-r from-blue-600 to-pink-600 hover:from-blue-700 hover:to-pink-700 px-8 py-4 rounded-full font-semibold flex items-center gap-2 transform hover:scale-105 transition-all"
 							>
 								Start Funding <ArrowUpRight className="w-5 h-5" />
 							</Link>
 							<Link
 								to="/create-campaign"
-								className="border-2 border-purple-500 px-8 py-4 rounded-full font-semibold hover:bg-purple-600/20 backdrop-blur-sm transition-all"
+								className="border-2 border-blue-500 px-8 py-4 rounded-full font-semibold hover:bg-blue-600/20 backdrop-blur-sm transition-all"
 							>
 								Create campaign
 							</Link>
@@ -448,96 +489,132 @@ const Home = () => {
 			</section>
 
 			{/* Contact Us Section */}
-			<section className="py-20 bg-black/50">
-				<div className="container mx-auto px-6">
+			<section className="py-24 bg-gradient-to-b from-black/50 to-black/80 relative overflow-hidden">
+				{/* Decorative Background Elements */}
+				<div className="absolute inset-0 overflow-hidden">
+					<div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-r from-purple-500/10 to-transparent rounded-full blur-3xl transform rotate-12" />
+					<div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-l from-pink-500/10 to-transparent rounded-full blur-3xl transform -rotate-12" />
+				</div>
+
+				<div className="container mx-auto px-6 relative">
 					<div className="text-center mb-16">
-						<h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+						<h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent inline-block">
 							Get in Touch
 						</h2>
-						<p className="text-gray-400 max-w-2xl mx-auto">
+						<p className="text-gray-400 max-w-2xl mx-auto text-lg">
 							Have questions or need support? Our team is here to help you
 							navigate the future of crowdfunding.
 						</p>
 					</div>
 
-					<div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+					<div className="grid lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
 						{/* Contact Information */}
 						<div className="space-y-8">
-							<div className="flex items-start space-x-4">
-								<div className="w-12 h-12 rounded-full bg-purple-600/20 flex items-center justify-center flex-shrink-0">
-									<Mail className="w-6 h-6 text-purple-400" />
+							{contactInfo.map((info, index) => (
+								<div key={index} className="group">
+									<div className="flex items-start space-x-6 p-6 rounded-xl bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 hover:bg-gray-800/50 transition-all duration-300">
+										<div
+											className={`w-14 h-14 rounded-xl bg-${info.color}-600/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}
+										>
+											<info.icon className={`w-7 h-7 text-${info.color}-400`} />
+										</div>
+										<div>
+											<h3 className="text-xl font-semibold mb-2 text-white">
+												{info.title}
+											</h3>
+											{info.lines.map((line, i) => (
+												<p key={i} className="text-gray-400">
+													{line}
+												</p>
+											))}
+										</div>
+									</div>
 								</div>
-								<div>
-									<h3 className="text-xl font-semibold mb-2">Email Us</h3>
-									<p className="text-gray-400">support@platform.com</p>
-									<p className="text-gray-400">business@platform.com</p>
-								</div>
-							</div>
-
-							<div className="flex items-start space-x-4">
-								<div className="w-12 h-12 rounded-full bg-pink-600/20 flex items-center justify-center flex-shrink-0">
-									<Phone className="w-6 h-6 text-pink-400" />
-								</div>
-								<div>
-									<h3 className="text-xl font-semibold mb-2">Call Us</h3>
-									<p className="text-gray-400">+1 (555) 123-4567</p>
-									<p className="text-gray-400">Mon-Fri 9AM-6PM EST</p>
-								</div>
-							</div>
-
-							<div className="flex items-start space-x-4">
-								<div className="w-12 h-12 rounded-full bg-orange-600/20 flex items-center justify-center flex-shrink-0">
-									<MapPin className="w-6 h-6 text-orange-400" />
-								</div>
-								<div>
-									<h3 className="text-xl font-semibold mb-2">Visit Us</h3>
-									<p className="text-gray-400">123 Blockchain Street</p>
-									<p className="text-gray-400">Crypto City, CC 12345</p>
-								</div>
-							</div>
+							))}
 						</div>
 
 						{/* Contact Form */}
-						<div className="bg-gray-800/50 p-8 rounded-2xl">
-							<form className="space-y-6">
-								<div>
-									<label className="block text-sm font-medium mb-2">Name</label>
-									<input
-										type="text"
-										className="w-full px-4 py-3 bg-gray-900/50 rounded-lg border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-										placeholder="Your name"
-									/>
-								</div>
-								<div>
-									<label className="block text-sm font-medium mb-2">
-										Email
-									</label>
-									<input
-										type="email"
-										className="w-full px-4 py-3 bg-gray-900/50 rounded-lg border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-										placeholder="your@email.com"
-									/>
-								</div>
-								<div>
-									<label className="block text-sm font-medium mb-2">
-										Message
-									</label>
-									<textarea
-										className="w-full px-4 py-3 bg-gray-900/50 rounded-lg border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all h-32"
-										placeholder="Your message..."
-									></textarea>
-								</div>
-								<button
-									type="submit"
-									className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-lg font-semibold transform hover:scale-105 transition-all"
-								>
-									Send Message
-								</button>
-							</form>
+						<div className="relative">
+							<div className="bg-gray-800/30 backdrop-blur-sm p-8 rounded-xl border border-gray-700/50">
+								{isSuccess && (
+									<div className="mb-6 bg-green-500/20 border-green-500/50">
+										<p className="text-green-400">
+											Message sent successfully! Well get back to you soon.
+										</p>
+									</div>
+								)}
+
+								<form onSubmit={handleSubmit} className="space-y-6">
+									<div>
+										<label className="block text-sm font-medium mb-2 text-gray-300">
+											Name
+										</label>
+										<input
+											type="text"
+											required
+											className="w-full px-4 py-3 bg-gray-900/50 rounded-lg border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all text-white placeholder-gray-500"
+											placeholder="Your name"
+											value={formData.name}
+											onChange={(e) =>
+												setFormData({ ...formData, name: e.target.value })
+											}
+										/>
+									</div>
+									<div>
+										<label className="block text-sm font-medium mb-2 text-gray-300">
+											Email
+										</label>
+										<input
+											type="email"
+											required
+											className="w-full px-4 py-3 bg-gray-900/50 rounded-lg border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all text-white placeholder-gray-500"
+											placeholder="your@email.com"
+											value={formData.email}
+											onChange={(e) =>
+												setFormData({ ...formData, email: e.target.value })
+											}
+										/>
+									</div>
+									<div>
+										<label className="block text-sm font-medium mb-2 text-gray-300">
+											Message
+										</label>
+										<textarea
+											required
+											className="w-full px-4 py-3 bg-gray-900/50 rounded-lg border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all h-32 text-white placeholder-gray-500"
+											placeholder="Your message..."
+											value={formData.message}
+											onChange={(e) =>
+												setFormData({ ...formData, message: e.target.value })
+											}
+										></textarea>
+									</div>
+									<button
+										type="submit"
+										disabled={isSubmitting}
+										className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-lg font-semibold transform hover:scale-105 transition-all text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+									>
+										{isSubmitting ? (
+											<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+										) : isSuccess ? (
+											<>
+												<CheckCircle className="w-5 h-5" />
+												<span>Sent!</span>
+											</>
+										) : (
+											<>
+												<Send className="w-5 h-5" />
+												<span>Send Message</span>
+											</>
+										)}
+									</button>
+								</form>
+							</div>
 						</div>
 					</div>
 				</div>
 			</section>
+
 			<button
 				onClick={scrollToTop}
 				className={`fixed bottom-4 right-4 p-3 rounded-full bg-purple-500 text-white shadow-lg transition-opacity ${
