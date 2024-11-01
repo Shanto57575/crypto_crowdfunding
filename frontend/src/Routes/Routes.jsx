@@ -6,11 +6,13 @@ import CreateCampaign from "../Components/CreateCampaign";
 import PrivateRoutes from "./PrivateRoutes";
 import MyCampaign from "../Components/MyCampaign";
 import ViewDetails from "../Components/ViewDetails";
+import ErrorPage from "../Components/ErrorPage";
 
 export const router = createBrowserRouter([
 	{
 		path: "/",
 		element: <Main />,
+		errorElement: <ErrorPage />,
 		children: [
 			{
 				path: "/",
