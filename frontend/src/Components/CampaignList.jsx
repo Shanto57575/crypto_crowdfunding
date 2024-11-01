@@ -16,7 +16,7 @@ import {
 	Users,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import UpdateCampaign from "./UpdateCampaign";
+import { Link } from "react-router-dom";
 
 const CampaignList = () => {
 	const [campaigns, setCampaigns] = useState([]);
@@ -24,19 +24,9 @@ const CampaignList = () => {
 	const [error, setError] = useState("");
 	const [donationAmounts, setDonationAmounts] = useState({});
 	const [filter, setFilter] = useState("all"); // New state for filter
-	const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-	const [selectedCampaign, setSelectedCampaign] = useState(null);
-
-	const handleUpdate = (campaign) => {
-		setSelectedCampaign(campaign);
-		setIsUpdateModalOpen(true);
-	};
 
 	const [loadingStates, setLoadingStates] = useState({
 		donate: {},
-		delete: {},
-		claim: {},
-		update: {},
 	});
 
 	// Helper function to set loading state for a specific action and campaign
@@ -163,34 +153,6 @@ const CampaignList = () => {
 		}
 	};
 
-	const handleDelete = async (campaignId) => {
-		console.log("cmapigniNd from delete campaign", campaignId);
-
-		try {
-			// Set loading for the specific campaign ID
-			setLoadingState("delete", campaignId, true);
-			const contract = await getContract();
-			if (!contract) throw new Error("Failed to load contract");
-
-			const tx = await contract.deleteCampaign(campaignId);
-			await tx.wait();
-
-			toast.success(
-				<p className="font-serif">Campaign Deleted Successfully</p>
-			);
-			fetchAllCampaigns();
-		} catch (err) {
-			console.error("Error deleting campaign:", err);
-			toast.error(
-				<p className="font-serif">
-					{err.message || "Failed to delete campaign"}
-				</p>
-			);
-		} finally {
-			setLoadingState("delete", campaignId, false);
-		}
-	};
-
 	useEffect(() => {
 		fetchAllCampaigns();
 	}, [filter]);
@@ -302,7 +264,6 @@ const CampaignList = () => {
 						>
 							{campaigns.map((campaign) => (
 								<div key={campaign.id} className="group relative">
-									{console.log(campaign)}
 									<div className="absolute -inset-0.5 bg-gradient-to-r from-gray-800 to-gray-700 rounded-2xl blur opacity-50 group-hover:opacity-75 transition duration-300"></div>
 									<div className="relative bg-gray-900 rounded-xl overflow-hidden border border-gray-800/50">
 										{campaign.image && (
@@ -441,34 +402,6 @@ const CampaignList = () => {
 															)}
 														</button>
 													</div>
-
-													<div className="flex gap-2">
-														<button
-															onClick={() => handleUpdate(campaign)}
-															disabled={loadingStates.update[campaign.id]}
-															className="flex-1 px-4 py-3 bg-gray-800
-															hover:bg-gray-700 text-gray-100 rounded-xl
-															transition-all disabled:opacity-50 flex
-															items-center justify-center gap-2"
-														>
-															{loadingStates.update[campaign.id] ? (
-																<Loader2 className="w-4 h-4 animate-spin" />
-															) : (
-																"Update"
-															)}
-														</button>
-														<button
-															onClick={() => handleDelete(campaign.id)}
-															disabled={loadingStates.delete[campaign.id]}
-															className="flex-1 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-														>
-															{loadingStates.delete[campaign.id] ? (
-																<Loader2 className="w-4 h-4 animate-spin" />
-															) : (
-																"Close"
-															)}
-														</button>
-													</div>
 												</div>
 											)}
 
@@ -480,6 +413,26 @@ const CampaignList = () => {
 													</p>
 												</div>
 											)}
+											<div className="mt-6">
+												<Link to={`view-details/${campaign.id}`}>
+													<button className="w-full bg-blue-600 text-gray-100 py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center">
+														View Details
+														<svg
+															className="w-4 h-4 ml-2"
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth="2"
+																d="M9 5l7 7-7 7"
+															/>
+														</svg>
+													</button>
+												</Link>
+											</div>
 
 											{new Date() >= campaign.deadline && !campaign.claimed && (
 												<div className="space-y-4">
@@ -516,17 +469,6 @@ const CampaignList = () => {
 					</>
 				)}
 			</div>
-			<UpdateCampaign
-				campaign={selectedCampaign}
-				isOpen={isUpdateModalOpen}
-				onClose={() => {
-					setIsUpdateModalOpen(false);
-					setSelectedCampaign(null);
-				}}
-				onUpdateSuccess={() => {
-					fetchAllCampaigns();
-				}}
-			/>
 		</div>
 	);
 };

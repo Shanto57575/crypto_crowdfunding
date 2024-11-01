@@ -6,9 +6,6 @@ export const uploadToIPFS = async (file) => {
         const upload = await pinata.upload.file(file);
         const ipfsUrl = await pinata.gateways.convert(upload.IpfsHash);
 
-        console.log("upload=>", upload)
-        console.log("ipfsURL=>", ipfsUrl)
-
         return {
             hash: upload.IpfsHash,
             url: ipfsUrl

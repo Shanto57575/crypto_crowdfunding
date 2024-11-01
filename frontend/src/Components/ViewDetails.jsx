@@ -270,7 +270,6 @@ const ViewDetails = () => {
 														transition={{ delay: index * 0.1 }}
 														className="flex items-center justify-between p-4 bg-gray-700/30 rounded-xl"
 													>
-														{console.log("donar", donor)}
 														<div className="flex items-center justify-between space-x-3">
 															<div className="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center">
 																<UserRound className="h-5 w-5 text-purple-400" />
