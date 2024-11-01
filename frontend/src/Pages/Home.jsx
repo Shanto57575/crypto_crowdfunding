@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+
 import {
 	Wallet,
 	TrendingUp,
@@ -19,6 +21,7 @@ import {
 	Mail,
 	Phone,
 	MapPin,
+	ArrowBigUp,
 } from "lucide-react";
 
 const benefits = [
@@ -98,14 +101,27 @@ const faqs = [
 const Home = () => {
 	const [isVisible, setIsVisible] = useState(false);
 	const [activeAccordion, setActiveAccordion] = useState(0);
-	console.log(isVisible);
+
+	const toggleVisibility = () => {
+		if (window.scrollY > 300) {
+			setIsVisible(true);
+		} else {
+			setIsVisible(false);
+		}
+	};
+
+	const scrollToTop = () => {
+		window.scrollTo({
+			top: 0,
+			behavior: "smooth", // Smooth scroll to the top
+		});
+	};
 
 	useEffect(() => {
-		const toggleVisibility = () => {
-			setIsVisible(window.pageYOffset > 300);
-		};
 		window.addEventListener("scroll", toggleVisibility);
-		return () => window.removeEventListener("scroll", toggleVisibility);
+		return () => {
+			window.removeEventListener("scroll", toggleVisibility);
+		};
 	}, []);
 
 	return (
@@ -135,12 +151,18 @@ const Home = () => {
 							technology.
 						</p>
 						<div className="flex justify-center gap-6">
-							<button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-semibold flex items-center gap-2 transform hover:scale-105 transition-all">
+							<Link
+								to="/all-campaigns"
+								className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-semibold flex items-center gap-2 transform hover:scale-105 transition-all"
+							>
 								Start Funding <ArrowUpRight className="w-5 h-5" />
-							</button>
-							<button className="border-2 border-purple-500 px-8 py-4 rounded-full font-semibold hover:bg-purple-600/20 backdrop-blur-sm transition-all">
+							</Link>
+							<Link
+								to="/create-campaign"
+								className="border-2 border-purple-500 px-8 py-4 rounded-full font-semibold hover:bg-purple-600/20 backdrop-blur-sm transition-all"
+							>
 								Create campaign
-							</button>
+							</Link>
 						</div>
 
 						{/* Quick Stats */}
@@ -516,6 +538,15 @@ const Home = () => {
 					</div>
 				</div>
 			</section>
+			<button
+				onClick={scrollToTop}
+				className={`fixed bottom-4 right-4 p-3 rounded-full bg-purple-500 text-white shadow-lg transition-opacity ${
+					isVisible ? "opacity-100" : "opacity-0"
+				}`}
+				style={{ display: isVisible ? "block" : "none" }}
+			>
+				<ArrowBigUp size={24} />
+			</button>
 		</div>
 	);
 };
