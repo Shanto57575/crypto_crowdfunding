@@ -6,6 +6,7 @@ import CreateCampaign from "../Components/CreateCampaign";
 import PrivateRoutes from "./PrivateRoutes";
 import MyCampaign from "../Components/MyCampaign";
 import ViewDetails from "../Components/ViewDetails";
+import UpdateCampaign from "../Components/UpdateCampaign";
 
 export const router = createBrowserRouter([
 	{
@@ -19,6 +20,10 @@ export const router = createBrowserRouter([
 			{
 				path: "/create-campaign",
 				element: <CreateCampaign />,
+			},
+			{
+				path: "/update-campaign",
+				element: <UpdateCampaign />,
 			},
 			{
 				element: <PrivateRoutes />,

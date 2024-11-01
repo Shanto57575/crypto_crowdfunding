@@ -75,12 +75,6 @@
 				"internalType": "bytes32",
 				"name": "id",
 				"type": "bytes32"
-			},
-			{
-				"indexed": false,
-				"internalType": "enum CrowdFunding.CampaignStatus",
-				"name": "status",
-				"type": "uint8"
 			}
 		],
 		"name": "CampaignDeleted",
@@ -100,6 +94,18 @@
 				"internalType": "string",
 				"name": "metadataHash",
 				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newTarget",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newDeadline",
+				"type": "uint256"
 			}
 		],
 		"name": "CampaignUpdated",
@@ -778,6 +784,16 @@
 				"internalType": "string",
 				"name": "_newMetadataHash",
 				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_newTarget",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_newDeadline",
+				"type": "uint256"
 			}
 		],
 		"name": "updateCampaign",

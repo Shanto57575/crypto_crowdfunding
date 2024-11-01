@@ -16,6 +16,7 @@ import {
 	Users,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import UpdateCampaign from "./UpdateCampaign";
 
 const CampaignList = () => {
 	const [campaigns, setCampaigns] = useState([]);
@@ -23,6 +24,14 @@ const CampaignList = () => {
 	const [error, setError] = useState("");
 	const [donationAmounts, setDonationAmounts] = useState({});
 	const [filter, setFilter] = useState("all"); // New state for filter
+	const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+	const [selectedCampaign, setSelectedCampaign] = useState(null);
+
+	const handleUpdate = (campaign) => {
+		setSelectedCampaign(campaign);
+		setIsUpdateModalOpen(true);
+	};
+
 	const [loadingStates, setLoadingStates] = useState({
 		donate: {},
 		delete: {},
@@ -155,13 +164,17 @@ const CampaignList = () => {
 	};
 
 	const handleDelete = async (campaignId) => {
+		console.log("cmapigniNd from delete campaign", campaignId);
+
 		try {
+			// Set loading for the specific campaign ID
 			setLoadingState("delete", campaignId, true);
 			const contract = await getContract();
 			if (!contract) throw new Error("Failed to load contract");
 
 			const tx = await contract.deleteCampaign(campaignId);
 			await tx.wait();
+
 			toast.success(
 				<p className="font-serif">Campaign Deleted Successfully</p>
 			);
@@ -175,22 +188,6 @@ const CampaignList = () => {
 			);
 		} finally {
 			setLoadingState("delete", campaignId, false);
-		}
-	};
-
-	const handleUpdate = async (campaignId) => {
-		try {
-			setLoadingState("update", campaignId, true);
-			// Your update logic here
-		} catch (err) {
-			console.error("Error updating campaign:", err);
-			toast.error(
-				<p className="font-serif">
-					{err.message || "Failed to update campaign"}
-				</p>
-			);
-		} finally {
-			setLoadingState("update", campaignId, false);
 		}
 	};
 
@@ -447,9 +444,12 @@ const CampaignList = () => {
 
 													<div className="flex gap-2">
 														<button
-															onClick={() => handleUpdate(campaign.id)}
+															onClick={() => handleUpdate(campaign)}
 															disabled={loadingStates.update[campaign.id]}
-															className="flex-1 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+															className="flex-1 px-4 py-3 bg-gray-800
+															hover:bg-gray-700 text-gray-100 rounded-xl
+															transition-all disabled:opacity-50 flex
+															items-center justify-center gap-2"
 														>
 															{loadingStates.update[campaign.id] ? (
 																<Loader2 className="w-4 h-4 animate-spin" />
@@ -465,7 +465,7 @@ const CampaignList = () => {
 															{loadingStates.delete[campaign.id] ? (
 																<Loader2 className="w-4 h-4 animate-spin" />
 															) : (
-																"Delete"
+																"Close"
 															)}
 														</button>
 													</div>
@@ -516,6 +516,17 @@ const CampaignList = () => {
 					</>
 				)}
 			</div>
+			<UpdateCampaign
+				campaign={selectedCampaign}
+				isOpen={isUpdateModalOpen}
+				onClose={() => {
+					setIsUpdateModalOpen(false);
+					setSelectedCampaign(null);
+				}}
+				onUpdateSuccess={() => {
+					fetchAllCampaigns();
+				}}
+			/>
 		</div>
 	);
 };
