@@ -5,6 +5,7 @@ import CampaignList from "../Components/CampaignList";
 import CreateCampaign from "../Components/CreateCampaign";
 import PrivateRoutes from "./PrivateRoutes";
 import MyCampaign from "../Components/MyCampaign";
+import ViewDetails from "../Components/ViewDetails";
 
 export const router = createBrowserRouter([
 	{
@@ -29,6 +30,10 @@ export const router = createBrowserRouter([
 					{
 						path: "/all-campaigns",
 						element: <CampaignList />,
+					},
+					{
+						path: "/my-campaigns/view-details/:id",
+						element: <ViewDetails />,
 					},
 				],
 			},

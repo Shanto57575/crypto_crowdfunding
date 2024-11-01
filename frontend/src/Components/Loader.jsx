@@ -4,7 +4,7 @@ function Loader({ sz }) {
 	return (
 		<div className="sweet-loading">
 			<HashLoader
-				color={"#616569"}
+				color={"#fff"}
 				size={sz}
 				aria-label="Loading Spinner"
 				data-testid="loader"

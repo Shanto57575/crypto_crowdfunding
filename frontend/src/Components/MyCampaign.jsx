@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useWallet } from "../context/WalletContext";
 import { getContract } from "../helper/contract";
 import Loader from "./Loader";
+import { Link } from "react-router-dom";
 
 const MyCampaign = () => {
 	const { userAddress } = useWallet();
@@ -30,13 +31,14 @@ const MyCampaign = () => {
 					const metadata = await metadataResponse.json();
 
 					return {
+						id: campaign.id,
 						owner: campaign.owner,
 						metadataHash: metadata,
 						target: campaign.target.toString(),
 						deadline: campaign.deadline.toString(),
 						amountCollected: campaign.amountCollected.toString(),
 						claimed: campaign.claimed,
-						isActive: campaign.isActive,
+						status: campaign.status,
 						category: campaign.category,
 					};
 				})
@@ -57,9 +59,12 @@ const MyCampaign = () => {
 		}
 	}, [userAddress]);
 
-	if (isLoading) {
-		return <Loader sz={50} />;
-	}
+	if (isLoading)
+		return (
+			<div className="min-h-screen bg-gray-950 flex justify-center items-center">
+				<Loader sz={100} />
+			</div>
+		);
 
 	if (error) {
 		return (
@@ -115,7 +120,7 @@ const MyCampaign = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-900 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+		<div className="min-h-screen bg-gray-900 pb-12 px-4 sm:px-6 lg:px-8 pt-36">
 			<div className="max-w-7xl mx-auto">
 				<div className="flex items-center justify-between mb-8">
 					<h2 className="text-3xl font-bold text-gray-100">My Campaigns</h2>
@@ -130,6 +135,8 @@ const MyCampaign = () => {
 							key={index}
 							className="bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-shadow duration-300 border border-gray-700"
 						>
+							{console.log("cmapiagn", campaign)}
+
 							<div className="relative pb-48">
 								<img
 									src={campaign.metadataHash.image}
@@ -139,12 +146,12 @@ const MyCampaign = () => {
 								<div className="absolute top-4 right-4">
 									<span
 										className={`px-3 py-1 rounded-full text-sm font-medium ${
-											campaign.isActive
+											campaign.status == 0
 												? "bg-green-200 text-green-700"
 												: "bg-red-900 text-red-200"
 										}`}
 									>
-										{campaign.isActive ? "Active" : "Inactive"}
+										{campaign.status == 0 ? "Active" : "Inactive"}
 									</span>
 								</div>
 							</div>
@@ -222,22 +229,24 @@ const MyCampaign = () => {
 								</div>
 
 								<div className="mt-6">
-									<button className="w-full bg-blue-600 text-gray-100 py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center">
-										View Details
-										<svg
-											className="w-4 h-4 ml-2"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth="2"
-												d="M9 5l7 7-7 7"
-											/>
-										</svg>
-									</button>
+									<Link to={`view-details/${campaign.id}`}>
+										<button className="w-full bg-blue-600 text-gray-100 py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center">
+											View Details
+											<svg
+												className="w-4 h-4 ml-2"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth="2"
+													d="M9 5l7 7-7 7"
+												/>
+											</svg>
+										</button>
+									</Link>
 								</div>
 							</div>
 						</div>

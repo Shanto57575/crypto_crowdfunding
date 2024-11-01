@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import toast from "react-hot-toast";
 import { createContext, useContext, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const WalletContext = createContext();
 export const useWallet = () => useContext(WalletContext);
@@ -65,7 +66,8 @@ export const WalletProvider = ({ children }) => {
 				<div className="font-serif text-center">
 					<h1>MetaMask is not installed</h1>
 					<p>
-						Please install MetaMask from <a href="https://metamask.io"></a>
+						Please Install MetaMask from{" "}
+						<span className="text-blue-600 underline">https://metamask.io</span>
 					</p>
 				</div>
 			);
