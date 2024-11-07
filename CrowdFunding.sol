@@ -215,6 +215,30 @@ contract CrowdFunding {
         emit DonationReceived(_id, msg.sender, msg.value, donationIndex);
     }
 
+    // NEW FUNCTION: 
+    function requestRefund(bytes32 _campaignId) public {
+        Campaign storage campaign = campaigns[_campaignId];
+        require(campaign.status == CampaignStatus.ACTIVE, "Campaign is not active");
+        require(block.timestamp > campaign.deadline, "Campaign is still ongoing");
+        require(campaign.amountCollected < campaign.target, "Campaign target was met");
+
+        for (uint256 i = 0; i < campaign.donations.length; i++) {
+            Donation storage donation = campaign.donations[i];
+            if (donation.donor == msg.sender) {
+                require(!donation.isRefunded, "Donation already refunded");
+                uint256 refundAmount = donation.amount;
+                donation.isRefunded = true;
+                campaign.amountCollected -= refundAmount;
+
+                (bool sent, ) = payable(donation.donor).call{value: refundAmount}("");
+                require(sent, "Failed to send refund");
+
+                emit DonationRefunded(_campaignId, donation.donor, refundAmount, i);
+            }
+        }
+    }
+
+
     function refundDonation(bytes32 _campaignId, address _donor, uint256 _donationIndex) public {
         Campaign storage campaign = campaigns[_campaignId];
         require(msg.sender == campaign.owner, "Only owner can refund");
@@ -402,4 +426,13 @@ contract CrowdFunding {
         else if (_index == 7) return "Environmental";
         else revert("Invalid category index");
     }
+
+    // Future featured plan:
+    /*
+      Voting/Governance:
+      Implement a system where donors can vote on important decisions related to the 
+      campaign, such as extending the deadline or changing the funding goal.This could 
+      be done by adding a donorVotes mapping to the Campaign struct and functions for 
+      casting and tallying votes.
+    */
 }
