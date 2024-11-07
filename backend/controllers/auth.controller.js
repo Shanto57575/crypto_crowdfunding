@@ -33,7 +33,7 @@ const generateNonce = async (req, res) => {
 const verifyUser = async (req, res) => {
     try {
         const { address, signature } = req.body;
-        const normalizedAddress = getAddress(address); // Updated for v6.13.4
+        const normalizedAddress = getAddress(address);
 
         const user = await User.findOne({ walletAddress: normalizedAddress });
         if (!user) {
@@ -42,7 +42,6 @@ const verifyUser = async (req, res) => {
 
         const message = `Sign here to verify your wallet: ${user.nonce}`;
 
-        // Updated for v6.13.4
         const recoveredAddress = verifyMessage(message, signature);
 
         if (normalizedAddress.toLowerCase() !== recoveredAddress.toLowerCase()) {
@@ -55,10 +54,18 @@ const verifyUser = async (req, res) => {
         const token = jwt.sign(
             {
                 walletAddress: normalizedAddress,
-                exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours
+                exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24)
             },
             process.env.JWT_SECRET
         );
+        // const token = jwt.sign(
+        //     {
+        //         walletAddress: normalizedAddress,
+        //         exp: Math.floor(Date.now() / 1000) + 10
+        //     },
+        //     process.env.JWT_SECRET
+        // );
+
 
         res.json({ token });
     } catch (error) {

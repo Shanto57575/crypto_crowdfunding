@@ -3,6 +3,7 @@ import { X, Loader2, Image as ImageIcon, Calendar, Coins } from "lucide-react";
 import { parseEther, formatEther } from "ethers";
 import { getContract } from "../helper/contract";
 import { uploadToIPFS } from "../helper/ipfsService";
+import toast from "react-hot-toast";
 
 const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 	const [formData, setFormData] = useState({
@@ -80,6 +81,7 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 		} catch (err) {
 			console.error("Campaign update failed:", err);
 			setError(err.message || "Failed to update campaign");
+			toast.error(<h1 className="font-serif">{err.message}</h1>);
 		} finally {
 			setLoading(false);
 		}
@@ -212,7 +214,8 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 										<Coins className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
 										<input
 											type="number"
-											step="0.000000000000000001"
+											step="0.0001"
+											min="0.0001"
 											value={formData.target}
 											onChange={(e) =>
 												setFormData((prev) => ({
