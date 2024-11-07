@@ -54,18 +54,10 @@ const verifyUser = async (req, res) => {
         const token = jwt.sign(
             {
                 walletAddress: normalizedAddress,
-                exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24)
+                exp: Math.floor(Date.now() / 1000) + (60 * 60 * 8)
             },
             process.env.JWT_SECRET
         );
-        // const token = jwt.sign(
-        //     {
-        //         walletAddress: normalizedAddress,
-        //         exp: Math.floor(Date.now() / 1000) + 10
-        //     },
-        //     process.env.JWT_SECRET
-        // );
-
 
         res.json({ token });
     } catch (error) {

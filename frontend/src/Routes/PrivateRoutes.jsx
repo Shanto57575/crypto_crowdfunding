@@ -2,8 +2,10 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Loader from "../Components/Loader";
+import { useWallet } from "../context/WalletContext";
 
 const PrivateRoutes = () => {
+	const { disconnect } = useWallet();
 	const navigate = useNavigate();
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [loading, setLoading] = useState(true);
@@ -38,6 +40,7 @@ const PrivateRoutes = () => {
 							Session expired. Please log in again.
 						</p>
 					);
+					disconnect();
 					navigate("/", { replace: true });
 				} else {
 					toast.error(
