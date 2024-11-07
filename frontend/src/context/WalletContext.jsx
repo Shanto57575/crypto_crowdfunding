@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import { createContext, useContext, useEffect, useState } from "react";
 import { BrowserProvider } from "ethers";
+import { jwtDecode } from "jwt-decode";
 
 const WalletContext = createContext();
 export const useWallet = () => useContext(WalletContext);
@@ -19,7 +20,24 @@ export const WalletProvider = ({ children }) => {
 				setUserAddress(savedAddress);
 				const savedToken = localStorage.getItem("authToken");
 				if (savedToken) {
-					setToken(savedToken);
+					// Check if the token is expired
+					const decodedToken = jwtDecode(savedToken);
+					const isExpired = Date.now() >= decodedToken.exp * 1000;
+
+					if (isExpired) {
+						// Token expired, remove address and token
+						localStorage.removeItem("userAddress");
+						localStorage.removeItem("authToken");
+						setUserAddress(null);
+						setToken(null);
+						toast.error(
+							<h1 className="font-serif text-center">
+								Your session has expired, please reconnect
+							</h1>
+						);
+					} else {
+						setToken(savedToken);
+					}
 				}
 			}
 		};
@@ -55,7 +73,7 @@ export const WalletProvider = ({ children }) => {
 	const handleDisconnect = () => {
 		localStorage.removeItem("userAddress");
 		localStorage.removeItem("authToken");
-		toast.success(<h1 className="font-serif">user disconnected</h1>);
+		toast.success(<h1 className="font-serif">User disconnected</h1>);
 		setUserAddress(null);
 		setToken(null);
 	};
@@ -105,7 +123,7 @@ export const WalletProvider = ({ children }) => {
 				localStorage.setItem("authToken", token);
 				setToken(token);
 				toast.success(
-					<h1 className="font-serif">Wallet authenticated successfully!</h1>
+					<h1 className="font-serif">Wallet connected successfully!</h1>
 				);
 				return token;
 			} else {

@@ -1,9 +1,10 @@
 import { ethers } from "ethers";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { LoaderPinwheel } from "lucide-react";
 import { getContract } from "../helper/contract";
 import { uploadToIPFS } from "../helper/ipfsService";
-import Loader from "./Loader";
-import toast from "react-hot-toast";
+import { rpcErrors, providerErrors } from "@metamask/rpc-errors";
 
 const CreateCampaign = () => {
 	const [title, setTitle] = useState("");
@@ -29,12 +30,11 @@ const CreateCampaign = () => {
 		{ id: "ENVIRONMENTAL", label: "Environmental" },
 	];
 
-	// ... (keeping all the existing handler functions and form validation logic)
 	const handleImageChange = (e) => {
 		const file = e.target.files[0];
 		if (file) {
-			if (file.size > 10 * 1024 * 1024) {
-				setError("File size should be less than 10MB");
+			if (file.size > 5 * 1024 * 1024) {
+				setError("File size should be less than or equal 5MB");
 				return;
 			}
 			setImage(file);
@@ -92,31 +92,82 @@ const CreateCampaign = () => {
 
 			const validationError = validateForm();
 			if (validationError) {
-				setError(validationError);
-				return;
+				throw providerErrors.userRejectedRequest(validationError);
 			}
 
 			setIsLoading(true);
 			setError("");
 
-			if (!window.ethereum)
-				throw new Error("Please install MetaMask to create a campaign");
+			// Check for MetaMask installation
+			if (!window.ethereum) {
+				throw providerErrors.custom({
+					code: 4200,
+					message: "Please install MetaMask to create a campaign",
+				});
+			}
 
-			const accounts = await window.ethereum.request({
-				method: "eth_requestAccounts",
-			});
+			let accounts;
+			try {
+				accounts = await window.ethereum.request({
+					method: "eth_requestAccounts",
+				});
+			} catch (err) {
+				// Handle MetaMask specific errors
+				if (err.code === 4001) {
+					throw providerErrors.userRejectedRequest();
+				} else if (err.code === -32002) {
+					throw providerErrors.custom({
+						code: -32002,
+						message:
+							"MetaMask connection request already pending. Please check your MetaMask",
+					});
+				} else if (err.code === -32603) {
+					throw rpcErrors.internal();
+				}
+				throw err;
+			}
 
-			if (!accounts || accounts.length === 0)
-				throw new Error("No connected account found");
+			if (!accounts || accounts.length === 0) {
+				throw providerErrors.unauthorized();
+			}
+
+			// Check if we're on the correct network (Sepolia)
+			const chainId = await window.ethereum.request({ method: "eth_chainId" });
+			if (chainId !== "0xaa36a7") {
+				// Sepolia chainId
+				try {
+					await window.ethereum.request({
+						method: "wallet_switchEthereumChain",
+						params: [{ chainId: "0xaa36a7" }],
+					});
+				} catch (switchError) {
+					if (switchError.code === 4902) {
+						throw providerErrors.custom({
+							code: 4902,
+							message: "Please add Sepolia network to your MetaMask",
+						});
+					}
+					throw providerErrors.custom({
+						code: 4901,
+						message: "Please switch to Sepolia network in MetaMask",
+					});
+				}
+			}
 
 			const contract = await getContract();
-			if (!contract) throw new Error("Failed to load contract");
+			if (!contract) {
+				throw rpcErrors.invalidRequest("Failed to load contract");
+			}
 
 			let finalImageUrls;
 			if (imageMethod === "upload" && image) {
 				const imageUpload = await uploadToIPFS(image);
-				if (!imageUpload || !imageUpload.url)
-					throw new Error("Failed to upload image");
+				if (!imageUpload || !imageUpload.url) {
+					throw providerErrors.custom({
+						code: 4200,
+						message: "Failed to upload image to IPFS",
+					});
+				}
 				finalImageUrls = imageUpload.url;
 			} else if (imageMethod === "url" && imageUrl) {
 				finalImageUrls = imageUrl;
@@ -135,32 +186,80 @@ const CreateCampaign = () => {
 			});
 
 			const metadataUpload = await uploadToIPFS(metadataBlob);
-			if (!metadataUpload || !metadataUpload.url)
-				throw new Error("Failed to upload metadata");
+			if (!metadataUpload || !metadataUpload.url) {
+				throw providerErrors.custom({
+					code: 4200,
+					message: "Failed to upload metadata to IPFS",
+				});
+			}
 
-			const parsedTarget = ethers.parseEther(target.toString().trim());
+			let parsedTarget;
+			try {
+				parsedTarget = ethers.parseEther(target.toString().trim());
+			} catch (err) {
+				console.log(err);
+				throw providerErrors.invalidInput(
+					"Invalid target amount. Please enter a valid number"
+				);
+			}
+
 			const deadlineTimestamp = Math.floor(Date.parse(deadline) / 1000);
 			const categoryIndex = categories.findIndex((cat) => cat.id === category);
 
-			if (categoryIndex === -1) throw new Error("Invalid category selected");
+			if (categoryIndex === -1) {
+				throw providerErrors.invalidInput("Invalid category selected");
+			}
 
-			const tx = await contract.createCampaign(
-				campaignId,
-				metadataUpload.url,
-				parsedTarget,
-				deadlineTimestamp,
-				categoryIndex
-			);
+			try {
+				const tx = await contract.createCampaign(
+					campaignId,
+					metadataUpload.url,
+					parsedTarget,
+					deadlineTimestamp,
+					categoryIndex
+				);
 
-			const receipt = await tx.wait();
+				const receipt = await tx.wait();
 
-			if (receipt.status === 0) throw new Error("Transaction failed");
+				if (receipt.status === 0) {
+					throw rpcErrors.internal("Transaction failed");
+				}
 
-			toast.success("Campaign created successfully!");
-			resetForm();
+				toast.success(
+					<h1 className="font-serif">Campaign created successfully!</h1>
+				);
+				resetForm();
+			} catch (txError) {
+				// Handle transaction-specific errors
+				if (txError.code === "ACTION_REJECTED") {
+					throw providerErrors.userRejectedRequest(
+						"Transaction rejected by user"
+					);
+				} else if (txError.code === "INSUFFICIENT_FUNDS") {
+					throw providerErrors.custom({
+						code: 4100,
+						message: "Insufficient funds for transaction",
+					});
+				} else if (txError.code === "UNPREDICTABLE_GAS_LIMIT") {
+					throw rpcErrors.invalidRequest(
+						"Unable to estimate gas. The transaction may fail"
+					);
+				}
+				throw txError;
+			}
 		} catch (error) {
 			console.error("Error creating campaign:", error);
-			setError(error.message || "Failed to create campaign");
+
+			// Handle the error based on its type
+			let errorMessage;
+			if (error.code && error.message) {
+				errorMessage = error.message;
+			} else {
+				errorMessage = "Failed to create campaign";
+			}
+
+			setError(errorMessage);
+			toast.error(<h1 className="font-serif">{errorMessage}</h1>);
 		} finally {
 			setIsLoading(false);
 		}
@@ -245,7 +344,8 @@ const CreateCampaign = () => {
 									value={description}
 									onChange={(e) => setDescription(e.target.value)}
 									disabled={isLoading}
-									maxLength={1000}
+									minLength={10}
+									maxLength={300}
 								/>
 							</div>
 
@@ -308,7 +408,7 @@ const CreateCampaign = () => {
 												<button
 													type="button"
 													onClick={removeImage}
-													className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors"
+													className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-600 transition-colors"
 													disabled={isLoading}
 												>
 													×
@@ -367,7 +467,7 @@ const CreateCampaign = () => {
 
 						{/* Error Display */}
 						{error && (
-							<div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+							<div className="text-center bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
 								{error}
 							</div>
 						)}
@@ -376,9 +476,13 @@ const CreateCampaign = () => {
 						<button
 							type="submit"
 							disabled={isLoading}
-							className="w-full text-center mx-auto py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+							className="flex items-center justify-center w-full text-center mx-auto py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							{isLoading ? <Loader sz={25} /> : "Launch Campaign"}
+							{isLoading ? (
+								<LoaderPinwheel className="w-6 h-6 animate-spin text-white mx-auto" />
+							) : (
+								"Launch Campaign"
+							)}
 						</button>
 					</form>
 				</div>

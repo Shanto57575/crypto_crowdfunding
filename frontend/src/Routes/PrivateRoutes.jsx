@@ -2,18 +2,20 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Loader from "../Components/Loader";
+import { useWallet } from "../context/WalletContext";
 
 const PrivateRoutes = () => {
+	const { disconnect } = useWallet();
 	const navigate = useNavigate();
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
-	const [loading, setLoading] = useState(true); // Start with loading true
+	const [loading, setLoading] = useState(true);
 
 	const fetchProtectedData = async () => {
 		const token = localStorage.getItem("authToken");
 		const userAddress = localStorage.getItem("userAddress");
 
 		if (!token || !userAddress) {
-			toast.error(<p className="font-serif">wallet is not connected !</p>);
+			toast.error(<p className="font-serif">Wallet is not connected!</p>);
 			setLoading(false);
 			navigate("/", { replace: true });
 			return;
@@ -32,13 +34,32 @@ const PrivateRoutes = () => {
 			);
 
 			if (!response.ok) {
-				throw new Error("Failed to fetch protected data");
+				if (response.status === 401) {
+					toast.error(
+						<p className="font-serif text-center">
+							Session expired. Please log in again.
+						</p>
+					);
+					disconnect();
+					navigate("/", { replace: true });
+				} else {
+					toast.error(
+						<p className="font-serif text-center">
+							Failed to fetch protected data.
+						</p>
+					);
+				}
+				setIsAuthenticated(false);
+				return;
 			}
 
 			await response.json();
 			setIsAuthenticated(true);
 		} catch (error) {
-			toast.error(<p className="font-serif">{error}</p>);
+			toast.error(
+				<p className="font-serif">An error occurred: {error.message}</p>
+			);
+			setIsAuthenticated(false);
 			navigate("/", { replace: true });
 		} finally {
 			setLoading(false);

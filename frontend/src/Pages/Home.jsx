@@ -86,7 +86,7 @@ const faqs = [
 	{
 		question: "What are the platform fees?",
 		answer:
-			"Our platform charges a minimal 3% fee on successfully funded projects, significantly lower than traditional crowdfunding platforms.",
+			"Our platform charges minimal transaction fees to cover blockchain processing costs. Additional fees vary by network",
 	},
 	{
 		question: "How do I start a campaign?",
@@ -97,6 +97,26 @@ const faqs = [
 		question: "Is my investment secure?",
 		answer:
 			"All transactions are secured by blockchain technology. Smart contracts ensure transparent fund management and automatic distributions.",
+	},
+	{
+		question: "Do I need a wallet to participate?",
+		answer:
+			"Yes, a blockchain wallet like MetaMask is required to send and receive funds securely.",
+	},
+	{
+		question: "Can I withdraw funds before reaching my goal?",
+		answer:
+			"Funds can only be accessed once the goal is met, ensuring accountability to backers",
+	},
+	{
+		question: "What happens if the campaign fails?",
+		answer:
+			"If a campaign doesn’t reach its goal, all contributions are refunded to the backers.",
+	},
+	{
+		question: "How are funds distributed?",
+		answer:
+			"Upon a successful campaign, funds are automatically transferred to the creator’s wallet via the smart contract",
 	},
 ];
 
@@ -154,7 +174,7 @@ const Home = () => {
 	const scrollToTop = () => {
 		window.scrollTo({
 			top: 0,
-			behavior: "smooth", // Smooth scroll to the top
+			behavior: "smooth",
 		});
 	};
 
@@ -186,21 +206,21 @@ const Home = () => {
 						<p className="text-2xl mb-6 text-gray-100 font-light">
 							Where Visionaries Meet Investors in the Web3 Space
 						</p>
-						<p className="text-lg mb-12 text-gray-300 max-w-2xl mx-auto">
+						<p className="md:text-lg mb-8 text-gray-300 max-w-2xl mx-auto">
 							Join the revolution in decentralized crowdfunding. Back innovative
 							projects, support creators, and earn rewards through blockchain
 							technology.
 						</p>
-						<div className="flex flex-col md:flex-row items-center justify-center gap-6">
+						<div className="flex flex-col md:flex-row items-center justify-center gap-6 pb-4">
 							<Link
 								to="/all-campaigns"
-								className="bg-gradient-to-r from-blue-600 to-pink-600 hover:from-blue-700 hover:to-pink-700 px-8 py-4 rounded-full font-semibold flex items-center gap-2 transform hover:scale-105 transition-all"
+								className="bg-gradient-to-r from-blue-600 to-pink-600 hover:from-blue-700 hover:to-pink-700 px-5 py-3 md:px-8 md:py-4 rounded-full font-semibold flex items-center gap-2 transform hover:scale-105 transition-all"
 							>
 								Start Funding <ArrowUpRight className="w-5 h-5" />
 							</Link>
 							<Link
 								to="/create-campaign"
-								className="border-2 border-blue-500 px-8 py-4 rounded-full font-semibold hover:bg-blue-600/20 backdrop-blur-sm transition-all"
+								className="border-2 border-blue-500 px-5 py-3 md:px-8 md:py-4 rounded-full font-semibold hover:bg-blue-600/20 backdrop-blur-sm transition-all"
 							>
 								Create campaign
 							</Link>
@@ -210,7 +230,7 @@ const Home = () => {
 					</div>
 				</div>
 			</section>
-			<div className="my-20 grid grid-cols-3 gap-8 max-w-5xl mx-auto backdrop-blur-sm bg-gradient-to-r bg-black shadow-md shadow-purple-600 p-8 rounded-2xl border border-gray-800/50">
+			<div className="my-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-10 md:mx-auto backdrop-blur-sm bg-gradient-to-r bg-black shadow-md shadow-purple-600 p-8 rounded-2xl border border-gray-800/50">
 				<div className="text-center">
 					<h3 className="text-3xl font-bold text-purple-400">$50M+</h3>
 					<p className="text-gray-400">Total Funded</p>

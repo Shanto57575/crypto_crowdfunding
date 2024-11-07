@@ -1,20 +1,21 @@
-import cors from 'cors'
-import dotenv from 'dotenv'
-import express from 'express'
-import verifyToken from './middlewares/auth.middleware.js'
-import { generateNonce, verifyUser } from './controllers/auth.controller.js'
-import connectDB from './db/dbConnection.js'
-import authRouter from './routes/auth.routes.js'
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import verifyToken from './middlewares/auth.middleware.js';
+import connectDB from './db/dbConnection.js';
+import authRouter from './routes/auth.routes.js';
 
-dotenv.config()
+dotenv.config();
 
-const app = express()
+const app = express();
 
-connectDB()
+// Connect to database
+connectDB();
 
+// CORS configuration
 app.use(cors({
     origin: (origin, callback) => {
-        const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173'];
+        const allowedOrigins = ['http://localhost:5173'];
         if (allowedOrigins.includes(origin) || !origin) {
             callback(null, true);
         } else {
@@ -32,11 +33,7 @@ app.get('/api/protected', verifyToken, async (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    console.error(err);
-    res.status(500).send('Server Error');
-});
-app.use((err, req, res, next) => {
-    console.error(err);
+    console.error('Error occurred: ', err);
     res.status(500).send('Server Error');
 });
 
