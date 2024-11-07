@@ -34,7 +34,7 @@ contract CrowdFunding {
 
     // Main storage struct
     struct Campaign {
-        bytes32 id;  // Unique ID from frontend
+        bytes32 id;
         address owner;
         string metadataHash;
         uint256 target;
