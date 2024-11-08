@@ -8,7 +8,8 @@ const userSchema = new mongoose.Schema({
     },
     nonce: {
         type: String,
-        required: true
+        required: true,
+        default: Math.floor(Math.random() * 1000000).toString()
     },
     createdAt: {
         type: Date,

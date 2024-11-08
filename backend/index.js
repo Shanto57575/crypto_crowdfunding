@@ -15,7 +15,7 @@ connectDB();
 // CORS configuration
 app.use(cors({
     origin: (origin, callback) => {
-        const allowedOrigins = ['http://localhost:5173'];
+        const allowedOrigins = ['https://cryptofundchain3.netlify.app', 'http://localhost:5173'];
         if (allowedOrigins.includes(origin) || !origin) {
             callback(null, true);
         } else {

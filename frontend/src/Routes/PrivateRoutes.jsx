@@ -34,7 +34,7 @@ const PrivateRoutes = () => {
 			);
 
 			if (!response.ok) {
-				if (response.status === 401) {
+				if (response.status === 401 || response.status === 403) {
 					toast.error(
 						<p className="font-serif text-center">
 							Session expired. Please log in again.
@@ -60,7 +60,6 @@ const PrivateRoutes = () => {
 				<p className="font-serif">An error occurred: {error.message}</p>
 			);
 			setIsAuthenticated(false);
-			navigate("/", { replace: true });
 		} finally {
 			setLoading(false);
 		}
@@ -68,7 +67,7 @@ const PrivateRoutes = () => {
 
 	useEffect(() => {
 		fetchProtectedData();
-	}, [navigate]);
+	}, []);
 
 	if (loading) {
 		return <Loader sz={50} />;
