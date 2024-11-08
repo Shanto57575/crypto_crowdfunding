@@ -1,9 +1,9 @@
-import express from 'express'
-import { generateNonce, verifyUser } from '../controllers/auth.controller.js'
+import express from 'express';
+import { generateNonce, verifyUser } from '../controllers/auth.controller.js';
 
-const authRouter = express.Router()
+const authRouter = express.Router();
 
-authRouter.post('/nonce', generateNonce)
-authRouter.post('/verify', verifyUser)
+authRouter.post('/nonce', generateNonce);
+authRouter.post('/verify', verifyUser);
 
-export default authRouter
+export default authRouter;

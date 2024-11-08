@@ -81,8 +81,21 @@ const MyCampaign = () => {
 						code: 4100,
 						message: "Insufficient funds for gas",
 					});
+				} else if (txError.code === "UNPREDICTABLE_GAS_LIMIT") {
+					// Check if the error message contains "Cannot delete campaign with donations"
+					if (
+						txError.message.includes("Cannot delete campaign with donations")
+					) {
+						throw providerErrors.custom({
+							code: 4901,
+							message: "Cannot delete campaign with active donations",
+						});
+					} else {
+						throw txError;
+					}
+				} else {
+					throw txError;
 				}
-				throw txError;
 			}
 		} catch (err) {
 			console.error("Error deleting campaign:", err);

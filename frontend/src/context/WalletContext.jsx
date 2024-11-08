@@ -67,6 +67,20 @@ export const WalletProvider = ({ children }) => {
 			const address = accounts[0];
 			setUserAddress(address);
 			localStorage.setItem("userAddress", address);
+
+			// Ensure token exists, otherwise authenticate
+			if (!token || localStorage.getItem("authToken") === null) {
+				authenticateWallet(address)
+					.then((newToken) => {
+						if (newToken) {
+							setToken(newToken);
+							localStorage.setItem("authToken", newToken);
+						}
+					})
+					.catch((error) => {
+						console.error("Authentication error on account change:", error);
+					});
+			}
 		}
 	};
 
@@ -163,7 +177,7 @@ export const WalletProvider = ({ children }) => {
 			if (accounts.length === 0) {
 				toast(
 					<p className="font-serif text-center">
-						Please unlock MetaMask by Clicking on its Icon in your Browser &
+						Please unlock MetaMask by Clicking on its Icon in your Browser &amp;
 						Entering your password
 					</p>
 				);
@@ -176,11 +190,14 @@ export const WalletProvider = ({ children }) => {
 			const signer = await provider.getSigner();
 			const address = await signer.getAddress();
 
-			const response = await authenticateWallet(address);
-
-			if (response) {
+			// Authenticate and get the token
+			const token = await authenticateWallet(address);
+			console.log("token==>", token);
+			if (token) {
 				setUserAddress(address);
+				setToken(token); // Set token in state
 				localStorage.setItem("userAddress", address);
+				localStorage.setItem("authToken", token); // Save token to localStorage
 			}
 		} catch (error) {
 			if (error.code === -32002) {

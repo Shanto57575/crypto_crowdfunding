@@ -34,50 +34,47 @@ const Navbar = () => {
 	);
 
 	return (
-		<nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a1a] bg-opacity-95 backdrop-blur-xl shadow-2xl border-b border-gray-800">
-			<div className="container mx-auto px-4 py-3 2xl:px-16">
+		<nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a1a] bg-opacity-95 backdrop-blur-lg shadow-2xl border-b border-gray-800 py-4 sm:py-3">
+			<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex justify-between items-center">
-					{/* Logo Section */}
-					<Link to="/" className="flex items-center space-x-3">
-						<div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-tr from-blue-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
-							<span className="text-white font-bold text-2xl md:text-3xl">
-								F
-							</span>
+					<Link to="/" className="flex items-center space-x-2">
+						<div className="w-8 h-8 bg-gradient-to-tr from-blue-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
+							<span className="text-white font-bold text-xl">F</span>
 						</div>
-						<h1 className="text-2xl md:text-3xl font-bold text-gray-100 tracking-tight hidden md:block">
+						<h1 className="text-xl font-bold text-gray-100 tracking-tight hidden sm:block">
 							FundChain
 						</h1>
 					</Link>
 
-					{/* Desktop Navigation */}
-					<div className="hidden md:flex items-center justify-center text-center space-x-6 xl:space-x-8">
-						{/* Navigation Links */}
-						<div className="flex space-x-1 xl:space-x-2">
-							{userMenu.map((item) => (
-								<Link
-									key={item.name}
-									to={item.path}
-									className={`group px-3 py-2 rounded-lg flex items-center space-x-2 transition ${
-										location.pathname === item.path
-											? "bg-gray-800 text-white"
-											: "text-gray-400 hover:bg-gray-800 hover:text-gray-100"
-									}`}
-								>
-									<item.icon
-										className={`h-5 w-5 ${
+					<div className="flex items-center space-x-4">
+						{/* Desktop Menu */}
+						<div className="hidden sm:flex items-center space-x-3">
+							{userAddress &&
+								userMenu.map((item) => (
+									<Link
+										key={item.name}
+										to={item.path}
+										className={`group px-3 py-2 rounded-lg flex items-center space-x-2 transition ${
 											location.pathname === item.path
-												? "text-blue-400"
-												: "text-gray-500 group-hover:text-blue-400"
+												? "bg-gray-800 text-white"
+												: "text-gray-400 hover:bg-gray-800 hover:text-gray-100"
 										}`}
-									/>
-									<span className="text-sm font-medium">{item.name}</span>
-								</Link>
-							))}
+									>
+										<item.icon
+											className={`h-5 w-5 ${
+												location.pathname === item.path
+													? "text-blue-400"
+													: "text-gray-500 group-hover:text-blue-400"
+											}`}
+										/>
+										<span className="text-sm font-medium">{item.name}</span>
+									</Link>
+								))}
 						</div>
 
-						{/* Wallet Connection */}
+						{/* User Address or Connect Wallet on Desktop */}
 						{userAddress ? (
-							<div className="flex items-center space-x-4 pl-4 border-l border-gray-700">
+							<div className="flex items-center space-x-4">
 								<AddressDisplay address={userAddress} />
 								<button
 									onClick={disconnect}
@@ -90,39 +87,39 @@ const Navbar = () => {
 						) : (
 							<button
 								onClick={connectWallet}
-								className="px-4 py-2.5 rounded bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-purple-800 transition transform hover:scale-105 flex items-center space-x-2 shadow-md"
+								className="w-full hidden sm:inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition md:flex items-center justify-center space-x-2"
 							>
 								<Wallet className="h-5 w-5" />
 								<span>Connect Wallet</span>
 							</button>
 						)}
-					</div>
 
-					{/* Mobile Menu Toggle */}
-					<div className="md:hidden">
-						<button
-							onClick={() => setIsMenuOpen(!isMenuOpen)}
-							className="text-gray-300 hover:text-white transition"
-							aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
-						>
-							{isMenuOpen ? (
-								<X className="h-6 w-6" />
-							) : (
-								<Menu className="h-6 w-6" />
-							)}
-						</button>
+						{/* Mobile Menu Button */}
+						<div className="sm:hidden">
+							<button
+								onClick={() => setIsMenuOpen(!isMenuOpen)}
+								className="text-gray-300 hover:text-white transition"
+								aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
+							>
+								{isMenuOpen ? (
+									<X className="h-6 w-6" />
+								) : (
+									<Menu className="h-6 w-6" />
+								)}
+							</button>
+						</div>
 					</div>
 				</div>
 
 				{/* Mobile Menu */}
 				{isMenuOpen && (
-					<div className="md:hidden absolute left-0 right-0 top-full bg-[#0a0a1a] shadow-2xl border-t border-gray-800">
+					<div className="sm:hidden absolute left-0 right-0 top-full bg-[#0a0a1a] shadow-2xl border-t border-gray-800">
 						<div className="px-4 py-6 space-y-3">
 							{userAddress ? (
 								<>
 									<AddressDisplay
 										address={userAddress}
-										className="mb-4 pb-3 border-b border-gray-700 text-center"
+										className="text-center mb-3"
 									/>
 									{userMenu.map((item) => (
 										<Link
@@ -162,7 +159,7 @@ const Navbar = () => {
 										connectWallet();
 										setIsMenuOpen(false);
 									}}
-									className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition flex items-center justify-center space-x-2"
+									className="w-full flex items-center justify-center space-x-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition"
 								>
 									<Wallet className="h-6 w-6" />
 									<span>Connect Wallet</span>
