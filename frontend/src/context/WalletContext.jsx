@@ -20,12 +20,10 @@ export const WalletProvider = ({ children }) => {
 				setUserAddress(savedAddress);
 				const savedToken = localStorage.getItem("authToken");
 				if (savedToken) {
-					// Check if the token is expired
 					const decodedToken = jwtDecode(savedToken);
 					const isExpired = Date.now() >= decodedToken.exp * 1000;
 
 					if (isExpired) {
-						// Token expired, remove address and token
 						localStorage.removeItem("userAddress");
 						localStorage.removeItem("authToken");
 						setUserAddress(null);
@@ -68,7 +66,6 @@ export const WalletProvider = ({ children }) => {
 			setUserAddress(address);
 			localStorage.setItem("userAddress", address);
 
-			// Ensure token exists, otherwise authenticate
 			if (!token || localStorage.getItem("authToken") === null) {
 				authenticateWallet(address)
 					.then((newToken) => {
@@ -109,13 +106,11 @@ export const WalletProvider = ({ children }) => {
 
 			const { nonce } = await nonceResponse.json();
 
-			// Create signature
 			const message = `Sign here to verify your wallet: ${nonce}`;
 			const provider = new BrowserProvider(window.ethereum);
 			const signer = await provider.getSigner();
 			const signature = await signer.signMessage(message);
 
-			// Verify signature with backend
 			const verifyResponse = await fetch(`${API_URL}/api/auth/verify`, {
 				method: "POST",
 				headers: {
@@ -170,21 +165,19 @@ export const WalletProvider = ({ children }) => {
 		try {
 			setIsConnecting(true);
 
+			// Directly request accounts - this will prompt MetaMask to unlock if it's locked
 			const accounts = await window.ethereum.request({
-				method: "eth_accounts",
+				method: "eth_requestAccounts",
 			});
 
 			if (accounts.length === 0) {
-				toast(
-					<p className="font-serif text-center">
-						Please unlock MetaMask by Clicking on its Icon in your Browser &amp;
-						Entering your password
-					</p>
+				toast.error(
+					<h1 className="font-serif text-center">
+						Failed to connect to MetaMask
+					</h1>
 				);
 				return;
 			}
-
-			await window.ethereum.request({ method: "eth_requestAccounts" });
 
 			const provider = new BrowserProvider(window.ethereum);
 			const signer = await provider.getSigner();
@@ -192,12 +185,11 @@ export const WalletProvider = ({ children }) => {
 
 			// Authenticate and get the token
 			const token = await authenticateWallet(address);
-			console.log("token==>", token);
 			if (token) {
 				setUserAddress(address);
-				setToken(token); // Set token in state
+				setToken(token);
 				localStorage.setItem("userAddress", address);
-				localStorage.setItem("authToken", token); // Save token to localStorage
+				localStorage.setItem("authToken", token);
 			}
 		} catch (error) {
 			if (error.code === -32002) {
