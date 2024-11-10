@@ -4,6 +4,7 @@ import express from 'express';
 import verifyToken from './middlewares/auth.middleware.js';
 import connectDB from './db/dbConnection.js';
 import authRouter from './routes/auth.routes.js';
+import aiRouter from './routes/ai.routes.js';
 
 dotenv.config();
 
@@ -27,7 +28,11 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/api/auth', authRouter);
+app.use('/api/ai', aiRouter);
 
+app.get('/', async (req, res) => {
+    res.json({ message: " //\\ FUNDCHAIN'S API IS RUNNING FINE //\\ 👌" })
+})
 app.get('/api/protected', verifyToken, async (req, res) => {
     res.json({ message: 'Access granted to protected route', user: req.user });
 });

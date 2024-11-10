@@ -25,6 +25,7 @@ import {
 	CheckCircle,
 	Send,
 } from "lucide-react";
+import ChainChat from "../Components/ChainChat";
 
 const benefits = [
 	{
@@ -155,7 +156,6 @@ const Home = () => {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		setIsSubmitting(true);
-		// Simulate form submission
 		setTimeout(() => {
 			setIsSubmitting(false);
 			setIsSuccess(true);
@@ -187,7 +187,7 @@ const Home = () => {
 
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
-			{/* Hero Section */}
+			<ChainChat />
 			<section className="min-h-screen flex items-center justify-center relative overflow-hidden pt-32">
 				<video
 					className="absolute inset-0 w-full h-full object-cover"
