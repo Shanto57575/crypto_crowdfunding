@@ -11,12 +11,12 @@ contract CrowdFunding {
     enum CampaignCategory {
         MEDICAL_TREATMENT,    
         DISASTER_RELIEF,      
-        EDUCATION,           
+        EDUCATION,          
         STARTUP_BUSINESS,    
-        CREATIVE_PROJECTS,   
-        COMMUNITY_SERVICE,   
+        CREATIVE_PROJECTS,  
+        COMMUNITY_SERVICE,  
         TECHNOLOGY,          
-        ENVIRONMENTAL       
+        ENVIRONMENTAL      
     }
 
     // Structs
@@ -62,11 +62,20 @@ contract CrowdFunding {
         DonorInfo[] donorList;
     }
 
+    // New struct for donation details
+    struct MyDonationInfo {
+        bytes32 campaignId;
+        uint256 amount;
+        uint256 timestamp;
+        bool isRefunded;
+        string category;
+    }
+
     // State Variables
     mapping(bytes32 => Campaign) public campaigns;
     mapping(address => bytes32[]) public ownerToCampaigns;
     mapping(bytes32 => bool) public campaignExists;
-    bytes32[] private allCampaignIds; // New array to track all campaign IDs
+    bytes32[] private allCampaignIds;
 
     // Events
     event CampaignCreated(
@@ -79,14 +88,14 @@ contract CrowdFunding {
     );
 
     event CampaignUpdated(
-        bytes32 indexed id, 
+        bytes32 indexed id,
         string metadataHash,
         uint256 newTarget,
         uint256 newDeadline
     );
 
     event CampaignDeleted(bytes32 indexed id);
-    
+   
     event DonationReceived(
         bytes32 indexed campaignId,
         address indexed donor,
@@ -106,6 +115,42 @@ contract CrowdFunding {
         address indexed owner,
         uint256 amountCollected
     );
+
+    // New function to get user's donations
+    function getMyDonations() public view returns (MyDonationInfo[] memory) {
+        uint256 totalDonations = 0;
+        
+        // First, count total donations by the user
+        for (uint256 i = 0; i < allCampaignIds.length; i++) {
+            bytes32 campaignId = allCampaignIds[i];
+            Campaign storage campaign = campaigns[campaignId];
+            totalDonations += campaign.donorToDonationIndices[msg.sender].length;
+        }
+        
+        MyDonationInfo[] memory myDonations = new MyDonationInfo[](totalDonations);
+        uint256 currentIndex = 0;
+        
+        // Then populate the array with donation details
+        for (uint256 i = 0; i < allCampaignIds.length; i++) {
+            bytes32 campaignId = allCampaignIds[i];
+            Campaign storage campaign = campaigns[campaignId];
+            uint256[] memory donationIndices = campaign.donorToDonationIndices[msg.sender];
+            
+            for (uint256 j = 0; j < donationIndices.length; j++) {
+                Donation storage donation = campaign.donations[donationIndices[j]];
+                myDonations[currentIndex] = MyDonationInfo({
+                    campaignId: campaignId,
+                    amount: donation.amount,
+                    timestamp: donation.timestamp,
+                    isRefunded: donation.isRefunded,
+                    category: campaign.category
+                });
+                currentIndex++;
+            }
+        }
+        
+        return myDonations;
+    }
 
     // Campaign Management Functions
     function createCampaign(
@@ -136,7 +181,7 @@ contract CrowdFunding {
 
         ownerToCampaigns[msg.sender].push(_campaignId);
         campaignExists[_campaignId] = true;
-        allCampaignIds.push(_campaignId); // Add to global campaign tracking
+        allCampaignIds.push(_campaignId);
 
         emit CampaignCreated(
             _campaignId,
@@ -181,10 +226,11 @@ contract CrowdFunding {
 
     function donateToCampaign(bytes32 _id) public payable {
         Campaign storage campaign = campaigns[_id];
+        require(msg.sender != campaign.owner, "Owner Cannot Donate");
         require(campaign.status == CampaignStatus.ACTIVE, "Campaign is not active");
         require(block.timestamp < campaign.deadline, "Campaign has ended");
         require(msg.value > 0, "Donation must be greater than 0");
-        
+       
         uint256 donationIndex = campaign.donations.length;
         campaign.donations.push(Donation({
             donor: msg.sender,
@@ -192,10 +238,10 @@ contract CrowdFunding {
             isRefunded: false,
             timestamp: block.timestamp
         }));
-        
+       
         campaign.donorToDonationIndices[msg.sender].push(donationIndex);
         campaign.amountCollected += msg.value;
-        
+       
         bool donorFound = false;
         for (uint i = 0; i < campaign.donorList.length; i++) {
             if (campaign.donorList[i].donorAddress == msg.sender) {
@@ -204,58 +250,34 @@ contract CrowdFunding {
                 break;
             }
         }
-        
+       
         if (!donorFound) {
             campaign.donorList.push(DonorInfo({
                 donorAddress: msg.sender,
                 totalDonated: msg.value
             }));
         }
-        
+       
         emit DonationReceived(_id, msg.sender, msg.value, donationIndex);
     }
-
-    // NEW FUNCTION: 
-    function requestRefund(bytes32 _campaignId) public {
-        Campaign storage campaign = campaigns[_campaignId];
-        require(campaign.status == CampaignStatus.ACTIVE, "Campaign is not active");
-        require(block.timestamp > campaign.deadline, "Campaign is still ongoing");
-        require(campaign.amountCollected < campaign.target, "Campaign target was met");
-
-        for (uint256 i = 0; i < campaign.donations.length; i++) {
-            Donation storage donation = campaign.donations[i];
-            if (donation.donor == msg.sender) {
-                require(!donation.isRefunded, "Donation already refunded");
-                uint256 refundAmount = donation.amount;
-                donation.isRefunded = true;
-                campaign.amountCollected -= refundAmount;
-
-                (bool sent, ) = payable(donation.donor).call{value: refundAmount}("");
-                require(sent, "Failed to send refund");
-
-                emit DonationRefunded(_campaignId, donation.donor, refundAmount, i);
-            }
-        }
-    }
-
 
     function refundDonation(bytes32 _campaignId, address _donor, uint256 _donationIndex) public {
         Campaign storage campaign = campaigns[_campaignId];
         require(msg.sender == campaign.owner, "Only owner can refund");
         require(campaign.status == CampaignStatus.ACTIVE, "Campaign is not active");
         require(_donationIndex < campaign.donations.length, "Invalid donation index");
-        
+       
         Donation storage donation = campaign.donations[_donationIndex];
         require(donation.donor == _donor, "Donor address doesn't match");
         require(!donation.isRefunded, "Donation already refunded");
-        
+       
         uint256 refundAmount = donation.amount;
         donation.isRefunded = true;
         campaign.amountCollected -= refundAmount;
-        
+       
         (bool sent, ) = payable(_donor).call{value: refundAmount}("");
         require(sent, "Failed to send refund");
-        
+       
         emit DonationRefunded(_campaignId, _donor, refundAmount, _donationIndex);
     }
 
@@ -266,24 +288,23 @@ contract CrowdFunding {
         require(block.timestamp > campaign.deadline, "Campaign has not ended yet");
         require(!campaign.claimed, "Funds already claimed");
         require(campaign.amountCollected > 0, "No funds to claim");
-    
+   
         uint256 amount = campaign.amountCollected;
         campaign.claimed = true;
-        
+       
         (bool sent, ) = payable(campaign.owner).call{value: amount}("");
         require(sent, "Failed to send funds");
-    
+   
         emit CampaignClaimed(_id, campaign.owner, amount);
     }
 
-    // Owner-specific view function
     function getCampaignsByOwner(address _owner) public view returns (CampaignInfo[] memory) {
         CampaignInfo[] memory ownerCampaigns = new CampaignInfo[](ownerToCampaigns[_owner].length);
-        
+       
         for (uint256 i = 0; i < ownerToCampaigns[_owner].length; i++) {
             bytes32 campaignId = ownerToCampaigns[_owner][i];
             Campaign storage campaign = campaigns[campaignId];
-            
+           
             ownerCampaigns[i] = CampaignInfo({
                 id: campaign.id,
                 owner: campaign.owner,
@@ -297,11 +318,10 @@ contract CrowdFunding {
                 donorList: campaign.donorList
             });
         }
-        
+       
         return ownerCampaigns;
     }
 
-    // Public view functions
     function getCampaignDetails(bytes32 _id) public view returns (CampaignInfo memory) {
         Campaign storage campaign = campaigns[_id];
         return CampaignInfo({
@@ -320,11 +340,11 @@ contract CrowdFunding {
 
     function getAllCampaigns() public view returns (CampaignInfo[] memory) {
         CampaignInfo[] memory allCampaigns = new CampaignInfo[](allCampaignIds.length);
-        
+       
         for (uint256 i = 0; i < allCampaignIds.length; i++) {
             bytes32 campaignId = allCampaignIds[i];
             Campaign storage campaign = campaigns[campaignId];
-            
+           
             allCampaigns[i] = CampaignInfo({
                 id: campaign.id,
                 owner: campaign.owner,
@@ -338,14 +358,55 @@ contract CrowdFunding {
                 donorList: campaign.donorList
             });
         }
-        
+       
         return allCampaigns;
+    }
+
+    function getCampaignsByCategory(uint8 _index) public view returns (CampaignInfo[] memory) {
+        string memory categoryName = getCategoryName(_index);
+        uint256 count = 0;
+
+        // Count the number of campaigns in the specified category
+        for (uint256 i = 0; i < allCampaignIds.length; i++) {
+            bytes32 campaignId = allCampaignIds[i];
+            Campaign storage campaign = campaigns[campaignId];
+            if (keccak256(bytes(campaign.category)) == keccak256(bytes(categoryName))) {
+                count++;
+            }
+        }
+
+        // Create a new array for campaigns that match the category
+        CampaignInfo[] memory filteredCampaigns = new CampaignInfo[](count);
+        uint256 index = 0;
+
+        // Populate the array with matching campaigns
+        for (uint256 i = 0; i < allCampaignIds.length; i++) {
+            bytes32 campaignId = allCampaignIds[i];
+            Campaign storage campaign = campaigns[campaignId];
+           
+            if (keccak256(bytes(campaign.category)) == keccak256(bytes(categoryName))) {
+                filteredCampaigns[index] = CampaignInfo({
+                    id: campaign.id,
+                    owner: campaign.owner,
+                    metadataHash: campaign.metadataHash,
+                    target: campaign.target,
+                    deadline: campaign.deadline,
+                    amountCollected: campaign.amountCollected,
+                    claimed: campaign.claimed,
+                    status: campaign.status,
+                    category: campaign.category,
+                    donorList: campaign.donorList
+                });
+                index++;
+            }
+        }
+
+        return filteredCampaigns;
     }
 
     function getActiveCampaigns() public view returns (CampaignInfo[] memory) {
         uint256 activeCount = 0;
-        for (uint256 i = 0; i < allCampaignIds.length; i++) {
-            bytes32 campaignId = allCampaignIds[i];
+        for (uint256 i = 0; i < allCampaignIds.length; i++) {bytes32 campaignId = allCampaignIds[i];
             if (campaigns[campaignId].status == CampaignStatus.ACTIVE) {
                 activeCount++;
             }
@@ -357,7 +418,7 @@ contract CrowdFunding {
         for (uint256 i = 0; i < allCampaignIds.length; i++) {
             bytes32 campaignId = allCampaignIds[i];
             Campaign storage campaign = campaigns[campaignId];
-            
+           
             if (campaign.status == CampaignStatus.ACTIVE) {
                 activeCampaigns[index] = CampaignInfo({
                     id: campaign.id,
@@ -393,7 +454,7 @@ contract CrowdFunding {
         for (uint256 i = 0; i < allCampaignIds.length; i++) {
             bytes32 campaignId = allCampaignIds[i];
             Campaign storage campaign = campaigns[campaignId];
-            
+           
             if (campaign.status == CampaignStatus.INACTIVE) {
                 inactiveCampaigns[index] = CampaignInfo({
                     id: campaign.id,
@@ -426,13 +487,4 @@ contract CrowdFunding {
         else if (_index == 7) return "Environmental";
         else revert("Invalid category index");
     }
-
-    // Future featured plan:
-    /*
-      Voting/Governance:
-      Implement a system where donors can vote on important decisions related to the 
-      campaign, such as extending the deadline or changing the funding goal.This could 
-      be done by adding a donorVotes mapping to the Campaign struct and functions for 
-      casting and tallying votes.
-    */
 }
