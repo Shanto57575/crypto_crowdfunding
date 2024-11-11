@@ -1,26 +1,26 @@
-import {
-	ArrowUpRight,
-	HeartIcon,
-	Share2Icon,
-	Target,
-	Wallet,
-	Sparkles,
-	Clock,
-	TrendingUp,
-	AlertCircle,
-	CheckCircle2,
-	Loader2,
-	Users,
-	Search,
-	X,
-	ChevronDown,
-} from "lucide-react";
+import { providerErrors, rpcErrors } from "@metamask/rpc-errors";
 import { ethers } from "ethers";
+import {
+	AlertCircle,
+	ArrowUpRight,
+	CheckCircle2,
+	ChevronDown,
+	Clock,
+	HeartIcon,
+	Loader2,
+	Search,
+	Share2Icon,
+	Sparkles,
+	Target,
+	TrendingUp,
+	Users,
+	Wallet,
+	X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { getContract } from "../helper/contract";
-import { rpcErrors, providerErrors } from "@metamask/rpc-errors";
 
 const CampaignList = () => {
 	const [loading, setLoading] = useState(true);
@@ -58,30 +58,36 @@ const CampaignList = () => {
 	const clearSearch = () => {
 		setSearchTerm("");
 		setIsSearching(false);
-		applyFilter(filter);
 		setShowSearch(true);
 	};
 
-	const applyFilter = (selectedFilter) => {
-		let filtered = [...allCampaigns];
-		console.table(filtered);
+	// const applyFilter = (selectedFilter) => {
+	//   let filtered = [...allCampaigns];
+	//   console.table(filtered);
 
-		switch (selectedFilter) {
-			case "active":
-				filtered = filtered.filter((campaign) => campaign.status === 0n);
-				break;
-			case "inactive":
-				filtered = filtered.filter((campaign) => campaign.status == 1n);
-				break;
-			default:
-				break;
+	//   switch (selectedFilter) {
+	//     case "active":
+	//       filtered = filtered.filter((campaign) => campaign.status === 0n);
+	//       break;
+	//     case "inactive":
+	//       filtered = filtered.filter((campaign) => campaign.status == 1n);
+	//       break;
+	//     default:
+	//       break;
+	//   }
+	//   setFilteredCampaigns(filtered);
+	// };
+
+	const handleFilterChange = (selectedValue) => {
+		setFilter(selectedValue);
+
+		if (selectedValue === "all") {
+			fetchAllCampaigns();
+		} else {
+			// Convert the numeric value to category name
+
+			fetchCampaignsByCategory(selectedValue);
 		}
-		setFilteredCampaigns(filtered);
-	};
-
-	const handleFilterChange = (selectedFilter) => {
-		setFilter(selectedFilter);
-		applyFilter(selectedFilter);
 	};
 
 	const fetchIPFSData = async (hash) => {
@@ -93,6 +99,93 @@ const CampaignList = () => {
 		} catch (err) {
 			console.error("Error fetching IPFS data:", err);
 			return null;
+		}
+	};
+	const fetchCampaignsByCategory = async (category) => {
+		console.log("Fetching campaigns for category:", category);
+		try {
+			setLoading(true);
+
+			// Validate category
+			if (!category || typeof category !== "string") {
+				throw rpcErrors.invalidParams({
+					message: "Invalid category parameter",
+					data: { providedCategory: category },
+				});
+			}
+
+			const contract = await getContract();
+			if (!contract) {
+				throw providerErrors.unauthorized({
+					message: "Please connect your wallet to view campaigns",
+					code: 4100,
+				});
+			}
+
+			const onChainCampaigns = await contract.getCampaignsByCategory(category);
+
+			const campaignsWithData = await Promise.all(
+				onChainCampaigns.map(async (campaign) => {
+					try {
+						const ipfsData = await fetchIPFSData(campaign.metadataHash);
+						return {
+							id: campaign.id,
+							owner: campaign.owner,
+							target: ethers.formatEther(campaign.target),
+							deadline: new Date(Number(campaign.deadline) * 1000),
+							amountCollected: ethers.formatEther(campaign.amountCollected),
+							claimed: campaign.claimed,
+							status: campaign.status,
+							category: campaign.category,
+							title: ipfsData?.title || "Untitled Campaign",
+							description: ipfsData?.description || "No description available",
+							image:
+								ipfsData?.image?.replace(
+									"ipfs://",
+									"https://gateway.pinata.cloud/ipfs/"
+								) || "",
+							donorList: campaign.donorList,
+						};
+					} catch (ipfsError) {
+						console.error("Error fetching IPFS data:", ipfsError);
+						throw rpcErrors.internal({
+							message: "Failed to fetch campaign metadata",
+							data: { campaignId: campaign.id },
+						});
+					}
+				})
+			);
+			console.log(campaignsWithData);
+			setAllCampaigns(campaignsWithData);
+			setFilteredCampaigns(campaignsWithData);
+			// applyFilter(category);
+		} catch (err) {
+			console.error("Error fetching campaigns:", err);
+			setError("");
+			if (err.code === 4001) {
+				throw providerErrors.userRejectedRequest({
+					message: "You rejected the connection request",
+				});
+			} else if (err.code === -32002) {
+				throw providerErrors.disconnected({
+					message: "Please unlock your MetaMask wallet",
+				});
+			} else if (err.code === -32603) {
+				throw rpcErrors.internal({
+					message: "Network error. Please check your connection",
+				});
+			} else if (err.code === 4100) {
+				throw providerErrors.unauthorized({
+					message: "Please connect your wallet to continue",
+				});
+			} else {
+				throw rpcErrors.invalidRequest({
+					message: err.message || "Failed to fetch campaigns",
+					data: { originalError: err },
+				});
+			}
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -144,7 +237,7 @@ const CampaignList = () => {
 
 			setAllCampaigns(campaignsWithData);
 			setFilteredCampaigns(campaignsWithData);
-			applyFilter(filter);
+			// applyFilter(filter);
 		} catch (err) {
 			console.error("Error fetching campaigns:", err);
 			setError("");
@@ -200,8 +293,7 @@ const CampaignList = () => {
 
 			toast.success(
 				<div className="flex items-center gap-2">
-					<CheckCircle2 className="w-4 h-4" />
-					<p className="font-medium">Donation Successful</p>
+					<p className="font-serif">Donation Successful</p>
 				</div>
 			);
 			setDonationAmounts({});
@@ -229,7 +321,7 @@ const CampaignList = () => {
 					"Failed to process donation";
 			}
 
-			toast.error(
+			toast(
 				<div className="font-serif flex items-center gap-2">
 					<AlertCircle className="w-4 h-4" />
 					<p className="font-medium">{errorMessage}</p>
@@ -357,9 +449,16 @@ const CampaignList = () => {
 									className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-gray-900/50 border border-gray-800 rounded-xl sm:rounded-2xl text-gray-100 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm sm:text-base"
 								>
 									<option value="all">All Campaigns</option>
-									<option value="active">Active Campaigns</option>
-									<option value="inactive">Inactive Campaigns</option>
+									<option value="0">Medical Treatment</option>
+									<option value="1">Disaster Relief</option>
+									<option value="2">Education</option>
+									<option value="3">Startup Business</option>
+									<option value="4">Creative Projects</option>
+									<option value="5">Community Service</option>
+									<option value="6">Technology</option>
+									<option value="7">Environmental</option>
 								</select>
+
 								<ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
 							</div>
 

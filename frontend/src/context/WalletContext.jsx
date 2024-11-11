@@ -84,7 +84,7 @@ export const WalletProvider = ({ children }) => {
 	const handleDisconnect = () => {
 		localStorage.removeItem("userAddress");
 		localStorage.removeItem("authToken");
-		toast.success(<h1 className="font-serif">User disconnected</h1>);
+		toast.success(<h1 className="font-serif">Wallet Disconnected</h1>);
 		setUserAddress(null);
 		setToken(null);
 	};

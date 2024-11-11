@@ -22,6 +22,7 @@ const Navbar = () => {
 		{ name: "Explore Campaigns", path: "/all-campaigns", icon: Compass },
 		{ name: "Create Campaigns", path: "/create-campaign", icon: PlusCircle },
 		{ name: "My Campaigns", path: "/my-campaigns", icon: Users },
+		{ name: "My Donation", path: "/my-donation", icon: Users },
 	];
 
 	const AddressDisplay = ({ address, className = "" }) => (

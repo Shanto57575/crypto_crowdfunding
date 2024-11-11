@@ -7,6 +7,7 @@ import PrivateRoutes from "./PrivateRoutes";
 import MyCampaign from "../Components/MyCampaign";
 import ViewDetails from "../Components/ViewDetails";
 import ErrorPage from "../Components/ErrorPage";
+import MyDonation from "../Components/MyDonation";
 
 export const router = createBrowserRouter([
 	{
@@ -17,6 +18,10 @@ export const router = createBrowserRouter([
 			{
 				path: "/",
 				element: <Home />,
+			},
+			{
+				path: "/my-donation",
+				element: <MyDonation />,
 			},
 			{
 				element: <PrivateRoutes />,
