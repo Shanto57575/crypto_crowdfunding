@@ -1,7 +1,8 @@
+import { ethers } from "ethers";
 import { ChartBarIcon, WalletIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getContract } from "../helper/contract";
-
+import DonorWithdrawalVotes from "./DonorWithdrawalVotes";
 const MyDonation = () => {
   const [donations, setDonations] = useState([]);
   const [donationTotals, setDonationTotals] = useState(null);
@@ -32,9 +33,9 @@ const MyDonation = () => {
 
       return {
         ...metadata, // Spread the metadata (title, description, image, etc.)
-        target: details.target.toString(),
+        target: ethers.formatEther(details.target),
         deadline: details.deadline.toString(),
-        amountCollected: details.amountCollected.toString(),
+        amountCollected: ethers.formatEther(details.amountCollected),
         owner: details.owner,
       };
     } catch (err) {
@@ -55,7 +56,7 @@ const MyDonation = () => {
 
       const formattedDonations = donationData.map((donation) => ({
         campaignId: donation.campaignId,
-        amount: donation.amount.toString(),
+        amount: ethers.formatEther(donation.amount),
         isRefunded: donation.isRefunded,
         category: donation.category,
         timestamp: donation.timestamp.toString(),
@@ -73,11 +74,11 @@ const MyDonation = () => {
       );
 
       const formattedTotals = {
-        totalAmount: totalsData.totalDonationsAllCampaigns.toString(),
+        totalAmount: ethers.formatEther(totalsData.totalDonationsAllCampaigns),
         campaignTotals: totalsData.campaignDonations.map((camp) => ({
           campaignId: camp.campaignId,
           category: camp.campaignCategory,
-          total: camp.totalDonated.toString(),
+          total: ethers.formatEther(camp.totalDonated),
         })),
       };
 
@@ -156,9 +157,7 @@ const MyDonation = () => {
               </div>
             </div>
             <p className="text-2xl font-bold text-white">
-              {Number(donationTotals.totalAmount / 1e18)
-                .toFixed(8)
-                .replace(/\.?0+$/, "")}{" "}
+              {donationTotals.totalAmount}
               ETH
             </p>
           </div>
@@ -219,9 +218,7 @@ const MyDonation = () => {
                   <div>
                     <p className="text-sm text-gray-400">Total Donated</p>
                     <p className="text-lg font-semibold text-white">
-                      {Number(campaign.total / 1e18)
-                        .toFixed(8)
-                        .replace(/\.?0+$/, "")}{" "}
+                      {campaign.total}
                       ETH
                     </p>
                   </div>
@@ -284,9 +281,7 @@ const MyDonation = () => {
                   <div>
                     <p className="text-sm text-gray-400 mb-1">Amount</p>
                     <p className="text-lg font-semibold text-white">
-                      {Number(donation.amount / 1e18)
-                        .toFixed(8)
-                        .replace(/\.?0+$/, "")}{" "}
+                      {donation.amount}
                       ETH
                     </p>
                   </div>
@@ -296,23 +291,14 @@ const MyDonation = () => {
                       <div>
                         <p className="text-sm text-gray-400 mb-1">Target</p>
                         <p className="text-gray-300">
-                          {Number(
-                            campaignDetails[donation.campaignId].target / 1e18
-                          )
-                            .toFixed(8)
-                            .replace(/\.?0+$/, "")}{" "}
+                          {campaignDetails[donation.campaignId].target}
                           ETH
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-400 mb-1">Collected</p>
                         <p className="text-gray-300">
-                          {Number(
-                            campaignDetails[donation.campaignId]
-                              .amountCollected / 1e18
-                          )
-                            .toFixed(8)
-                            .replace(/\.?0+$/, "")}{" "}
+                          {campaignDetails[donation.campaignId].amountCollected}
                           ETH
                         </p>
                       </div>
@@ -331,6 +317,9 @@ const MyDonation = () => {
           ))}
         </div>
       )}
+      <div className="my-5">
+        <DonorWithdrawalVotes />
+      </div>
     </div>
   );
 };
