@@ -86,6 +86,31 @@
       {
         "indexed": true,
         "internalType": "bytes32",
+        "name": "campaignId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "CampaignFundsClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
         "name": "id",
         "type": "bytes32"
       },
@@ -174,6 +199,31 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "campaignId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "donor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "vote",
+        "type": "bool"
+      }
+    ],
+    "name": "DonorVoted",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -186,6 +236,54 @@
       {
         "internalType": "bool",
         "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "campaignFundsClaimed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "campaignVotes",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "donor",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "vote",
         "type": "bool"
       }
     ],
@@ -229,6 +327,16 @@
       },
       {
         "internalType": "uint256",
+        "name": "claimedAlready",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "canClaimed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "amountCollected",
         "type": "uint256"
       },
@@ -246,6 +354,75 @@
         "internalType": "string",
         "name": "category",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_campaignId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "checkWithdrawalStatus",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isActive",
+        "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "metadataHash",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalVotes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "votesInFavor",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "votesAgainst",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalDonors",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "hasVoted",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "allVoted",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "canClaim",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "requested",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentRequest",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -307,6 +484,25 @@
     "inputs": [
       {
         "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "currentRequestId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
         "name": "_id",
         "type": "bytes32"
       }
@@ -330,77 +526,90 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getActiveCampaigns",
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_campaignId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "donorsRefuseEarlyWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_campaignId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_metadataHash",
+        "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "isVoting",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "vote",
+        "type": "bool"
+      }
+    ],
+    "name": "earlyWithdrawalRequest",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "earlyWithdraws",
     "outputs": [
       {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "id",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "internalType": "string",
-            "name": "metadataHash",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "target",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "deadline",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountCollected",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "claimed",
-            "type": "bool"
-          },
-          {
-            "internalType": "enum CrowdFunding.CampaignStatus",
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "internalType": "string",
-            "name": "category",
-            "type": "string"
-          },
-          {
-            "components": [
-              {
-                "internalType": "address",
-                "name": "donorAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "totalDonated",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct CrowdFunding.DonorInfo[]",
-            "name": "donorList",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct CrowdFunding.CampaignInfo[]",
-        "name": "",
-        "type": "tuple[]"
+        "internalType": "string",
+        "name": "metadataHash",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalVotes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "votesInFavor",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isActive",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "requestedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -473,6 +682,11 @@
             "internalType": "struct CrowdFunding.DonorInfo[]",
             "name": "donorList",
             "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "canClaimed",
+            "type": "uint256"
           }
         ],
         "internalType": "struct CrowdFunding.CampaignInfo[]",
@@ -556,6 +770,11 @@
             "internalType": "struct CrowdFunding.DonorInfo[]",
             "name": "donorList",
             "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "canClaimed",
+            "type": "uint256"
           }
         ],
         "internalType": "struct CrowdFunding.CampaignInfo",
@@ -639,6 +858,11 @@
             "internalType": "struct CrowdFunding.DonorInfo[]",
             "name": "donorList",
             "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "canClaimed",
+            "type": "uint256"
           }
         ],
         "internalType": "struct CrowdFunding.CampaignInfo[]",
@@ -722,83 +946,11 @@
             "internalType": "struct CrowdFunding.DonorInfo[]",
             "name": "donorList",
             "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct CrowdFunding.CampaignInfo[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getInactiveCampaigns",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "id",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "internalType": "string",
-            "name": "metadataHash",
-            "type": "string"
           },
           {
             "internalType": "uint256",
-            "name": "target",
+            "name": "canClaimed",
             "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "deadline",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountCollected",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "claimed",
-            "type": "bool"
-          },
-          {
-            "internalType": "enum CrowdFunding.CampaignStatus",
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "internalType": "string",
-            "name": "category",
-            "type": "string"
-          },
-          {
-            "components": [
-              {
-                "internalType": "address",
-                "name": "donorAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "totalDonated",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct CrowdFunding.DonorInfo[]",
-            "name": "donorList",
-            "type": "tuple[]"
           }
         ],
         "internalType": "struct CrowdFunding.CampaignInfo[]",
@@ -919,29 +1071,6 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "_campaignId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "_donor",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_donationIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "refundDonation",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
         "name": "_id",
         "type": "bytes32"
       },
@@ -988,6 +1117,37 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_campaignId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bool",
+        "name": "_vote",
+        "type": "bool"
+      }
+    ],
+    "name": "voteOnFundsClaim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_campaignId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "withdrawFundsAfterVote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
