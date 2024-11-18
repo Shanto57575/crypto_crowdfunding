@@ -622,7 +622,7 @@ const CampaignList = () => {
 												<TrendingUp className="w-4 h-4" />
 												<span className="text-xs font-medium">Raised</span>
 											</div>
-											<p className="text-gray-100 font-bold">
+											<p className="text-gray-100 font-bold overflow-x-scroll">
 												{campaign.amountCollected} ETH
 											</p>
 										</div>
