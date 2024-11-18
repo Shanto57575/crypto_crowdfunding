@@ -60,33 +60,47 @@ export const WalletProvider = ({ children }) => {
 
 	const handleAccountsChanged = (accounts) => {
 		if (accounts.length === 0) {
-			handleDisconnect();
+			handleDisconnect(); // Clear everything when no account is connected
 		} else {
-			const address = accounts[0];
-			setUserAddress(address);
-			localStorage.setItem("userAddress", address);
+			const newAddress = accounts[0];
 
-			if (!token || localStorage.getItem("authToken") === null) {
-				authenticateWallet(address)
-					.then((newToken) => {
-						if (newToken) {
-							setToken(newToken);
-							localStorage.setItem("authToken", newToken);
-						}
-					})
-					.catch((error) => {
-						console.error("Authentication error on account change:", error);
-					});
+			// Clear previous state if user changes account
+			if (userAddress && userAddress !== newAddress) {
+				localStorage.removeItem("authToken");
+				localStorage.removeItem("userAddress");
+				setToken(null);
+				setUserAddress(null);
+				toast.error(
+					<h1 className="font-serif text-center">
+						Account changed! Please reconnect to authenticate again.
+					</h1>
+				);
 			}
+
+			// Authenticate the new account
+			authenticateWallet(newAddress)
+				.then((newToken) => {
+					if (newToken) {
+						setToken(newToken);
+						setUserAddress(newAddress);
+						localStorage.setItem("authToken", newToken);
+						localStorage.setItem("userAddress", newAddress);
+					}
+				})
+				.catch((error) => {
+					console.error("Authentication error on account change:", error);
+				});
 		}
 	};
 
 	const handleDisconnect = () => {
-		localStorage.removeItem("userAddress");
 		localStorage.removeItem("authToken");
-		toast.success(<h1 className="font-serif">Wallet Disconnected</h1>);
-		setUserAddress(null);
+		localStorage.removeItem("userAddress");
+
 		setToken(null);
+		setUserAddress(null);
+
+		toast.success(<h1 className="font-serif">Wallet Disconnected</h1>);
 	};
 
 	const authenticateWallet = async (address) => {
@@ -129,11 +143,17 @@ export const WalletProvider = ({ children }) => {
 
 			const { token } = await verifyResponse.json();
 			if (token) {
+				// Save both address and token together
 				localStorage.setItem("authToken", token);
+				localStorage.setItem("userAddress", address);
+
+				setUserAddress(address);
 				setToken(token);
+
 				toast.success(
 					<h1 className="font-serif">Wallet connected successfully!</h1>
 				);
+
 				return token;
 			} else {
 				console.error("Token was not returned:", token);
@@ -165,7 +185,6 @@ export const WalletProvider = ({ children }) => {
 		try {
 			setIsConnecting(true);
 
-			// Directly request accounts - this will prompt MetaMask to unlock if it's locked
 			const accounts = await window.ethereum.request({
 				method: "eth_requestAccounts",
 			});

@@ -200,7 +200,7 @@ const Home = () => {
 
 				<div className="container mx-auto px-6 relative z-10">
 					<div className="text-center max-w-4xl mx-auto">
-						<h1 className="text-5xl md:text-7xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-orange-500 drop-shadow-2xl">
+						<h1 className="text-5xl md:text-7xl xl:text-8xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-orange-500 drop-shadow-2xl">
 							Fund the Future
 						</h1>
 						<p className="text-2xl mb-6 text-gray-100 font-light">
