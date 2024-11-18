@@ -133,7 +133,6 @@ function isRelevantQuery(query) {
 }
 
 function formatResponse(content, query) {
-    console.log("content: ", content, query)
     if (!content) {
         return "Okay. please ask relevent question!"
     }
@@ -191,7 +190,7 @@ const askQuestions = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 data: {
-                    answer: "It seems like you're asking about something outside of blockchain, cryptocurrency, or crowdfunding topics. I specialize in those areas, so feel free to ask me questions related to them!",
+                    answer: "It seems like you're asking about something outside of blockchain, cryptocurrency, or crowdfunding topics. I specialize in these areas, so feel free to ask questions related to them! If your question is relevant to these topics, please provide more context, and I'll be happy to assist you further.",
                     suggestedQuestions: SUGGESTED_QUESTIONS.beginner,
                     message: "Here are some blockchain-related questions you might find interesting:"
                 }
@@ -237,8 +236,6 @@ const askQuestions = async (req, res) => {
             data: formattedResponse
         });
     } catch (error) {
-        console.error('AI Assistant Error:', error);
-
         // Handle timeout specifically
         if (error.message === 'Request timeout') {
             return res.status(503).json({
@@ -274,7 +271,6 @@ const suggestedQuestions = async (req, res) => {
             data: questions
         });
     } catch (error) {
-        console.error('Error fetching suggested questions:', error);
         res.status(500).json({
             success: false,
             message: "Error fetching suggested questions",
