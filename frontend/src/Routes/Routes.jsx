@@ -10,44 +10,44 @@ import Home from "../Pages/Home";
 import PrivateRoutes from "./PrivateRoutes";
 
 export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Main />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        path: "/",
-        element: <Home />,
-      },
-      {
-        path: "/my-donation",
-        element: <MyDonation />,
-      },
-      {
-        element: <PrivateRoutes />,
-        children: [
-          {
-            path: "/create-campaign",
-            element: <CreateCampaign />,
-          },
-          {
-            path: "/my-campaigns",
-            element: <MyCampaign />,
-          },
-          {
-            path: "/my-donations",
-            element: <MyDonation />,
-          },
-          {
-            path: "/all-campaigns",
-            element: <CampaignList />,
-          },
-          {
-            path: "/all-campaigns/view-details/:id",
-            element: <ViewDetails />,
-          },
-        ],
-      },
-    ],
-  },
+	{
+		path: "/",
+		element: <Main />,
+		errorElement: <ErrorPage />,
+		children: [
+			{
+				path: "/",
+				element: <Home />,
+			},
+			{
+				element: <PrivateRoutes />,
+				children: [
+					{
+						path: "/all-campaigns",
+						element: <CampaignList />,
+					},
+					{
+						path: "/create-campaign",
+						element: <CreateCampaign />,
+					},
+					{
+						path: "/my-campaigns",
+						element: <MyCampaign />,
+					},
+					{
+						path: "/my-donations",
+						element: <MyDonation />,
+					},
+					{
+						path: "/my-donation",
+						element: <MyDonation />,
+					},
+					{
+						path: "/all-campaigns/view-details/:id",
+						element: <ViewDetails />,
+					},
+				],
+			},
+		],
+	},
 ]);

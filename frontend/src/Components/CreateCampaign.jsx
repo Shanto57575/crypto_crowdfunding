@@ -112,7 +112,6 @@ const CreateCampaign = () => {
 					method: "eth_requestAccounts",
 				});
 			} catch (err) {
-				// Handle MetaMask specific errors
 				if (err.code === 4001) {
 					throw providerErrors.userRejectedRequest();
 				} else if (err.code === -32002) {
@@ -131,7 +130,6 @@ const CreateCampaign = () => {
 				throw providerErrors.unauthorized();
 			}
 
-			// Check if we're on the correct network (Sepolia)
 			const chainId = await window.ethereum.request({ method: "eth_chainId" });
 			if (chainId !== "0xaa36a7") {
 				// Sepolia chainId

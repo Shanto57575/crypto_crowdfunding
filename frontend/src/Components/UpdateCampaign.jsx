@@ -101,6 +101,12 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 		}
 	};
 
+	// New function to handle image URL preview
+	const handleImageUrlChange = (url) => {
+		setFormData((prev) => ({ ...prev, image: url }));
+		setImagePreview(url);
+	};
+
 	if (!isOpen) return null;
 
 	return (
@@ -154,9 +160,7 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 								<input
 									type="url"
 									value={formData.image}
-									onChange={(e) =>
-										setFormData((prev) => ({ ...prev, image: e.target.value }))
-									}
+									onChange={(e) => handleImageUrlChange(e.target.value)}
 									placeholder="Enter image URL"
 									className="w-full rounded-lg bg-gray-800 text-white border border-gray-700 p-2.5 focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
 								/>
