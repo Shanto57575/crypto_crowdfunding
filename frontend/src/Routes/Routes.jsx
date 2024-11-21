@@ -8,6 +8,7 @@ import ViewDetails from "../Components/ViewDetails";
 import Main from "../Layout/Main";
 import Home from "../Pages/Home";
 import PrivateRoutes from "./PrivateRoutes";
+import Tutorial from "../Components/Tutorial";
 
 export const router = createBrowserRouter([
 	{
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
 			{
 				path: "/",
 				element: <Home />,
+			},
+			{
+				path: "/tutorial",
+				element: <Tutorial />,
 			},
 			{
 				element: <PrivateRoutes />,
