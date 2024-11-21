@@ -124,6 +124,7 @@ export const WalletProvider = ({ children }) => {
 			const provider = new BrowserProvider(window.ethereum);
 			const signer = await provider.getSigner();
 			const signature = await signer.signMessage(message);
+			console.log("SIGNATURE=>", signature);
 
 			const verifyResponse = await fetch(`${API_URL}/api/auth/verify`, {
 				method: "POST",
