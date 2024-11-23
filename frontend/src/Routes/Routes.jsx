@@ -9,6 +9,7 @@ import Main from "../Layout/Main";
 import Home from "../Pages/Home";
 import PrivateRoutes from "./PrivateRoutes";
 import Tutorial from "../Components/Tutorial";
+import Blog from "../Components/Blog";
 
 export const router = createBrowserRouter([
 	{
@@ -21,7 +22,11 @@ export const router = createBrowserRouter([
 				element: <Home />,
 			},
 			{
-				path: "/tutorial",
+				path: "/blog",
+				element: <Blog />,
+			},
+			{
+				path: "/user-guide",
 				element: <Tutorial />,
 			},
 			{
