@@ -267,8 +267,8 @@ const CampaignList = () => {
 					const data = await response.json();
 
 					if (response.ok) {
-						const conversionRate = parseFloat(data.data.amount); // Rate to convert currency to ETH
-						ethAmount = amount * conversionRate; // Convert input amount to ETH
+						const conversionRate = parseFloat(data.data.amount);
+						ethAmount = amount * conversionRate;
 					} else {
 						throw new Error(`Failed to fetch conversion rate for ${currency}`);
 					}

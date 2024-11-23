@@ -1,373 +1,275 @@
-import { ethers } from "ethers";
+/* eslint-disable react/no-unescaped-entities */
 import { useEffect, useState } from "react";
+import { ethers } from "ethers";
 import {
-  FiAlertCircle,
-  FiCheckCircle,
-  FiClock,
-  FiDollarSign,
-  FiFileText,
-  FiUsers,
-  FiGift,
-  FiUser,
-} from "react-icons/fi";
-import { FaDollarSign } from "react-icons/fa";
+	CheckCircle,
+	AlertCircle,
+	Clock,
+	DollarSign,
+	FileText,
+	User,
+} from "lucide-react";
 
 import { getContract } from "../helper/contract";
 
 const DonorWithdrawalVotes = () => {
-  const [donations, setDonations] = useState([]);
-  const [withdrawalRequests, setWithdrawalRequests] = useState({});
-  const [campaignDetails, setCampaignDetails] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [voting, setVoting] = useState({});
-  const [error, setError] = useState("");
-  const [hasDonations, setHasDonations] = useState(true);
+	const [donations, setDonations] = useState([]);
+	const [withdrawalRequests, setWithdrawalRequests] = useState({});
+	const [campaignDetails, setCampaignDetails] = useState({});
+	const [loading, setLoading] = useState(true);
+	const [voting, setVoting] = useState({});
+	const [error, setError] = useState("");
+	const [hasDonations, setHasDonations] = useState(true);
 
-  const fetchDonations = async () => {
-    try {
-      const contract = await getContract();
-      const myDonations = await contract.getMyDonations();
+	const fetchDonations = async () => {
+		try {
+			const contract = await getContract();
+			const myDonations = await contract.getMyDonations();
 
-      if (!myDonations || myDonations.length === 0) {
-        setHasDonations(false);
-        setLoading(false);
-        return;
-      }
+			if (!myDonations || myDonations.length === 0) {
+				setHasDonations(false);
+				setLoading(false);
+				return;
+			}
 
-      setDonations(myDonations);
-      setHasDonations(true);
+			setDonations(myDonations);
+			setHasDonations(true);
 
-      const requests = {};
-      const details = {};
+			const requests = {};
+			const details = {};
 
-      for (const donation of myDonations) {
-        const [withdrawalStatus, campaignInfo] = await Promise.all([
-          contract.checkWithdrawalStatus(donation.campaignId),
-          contract.getCampaignDetails(donation.campaignId),
-        ]);
+			for (const donation of myDonations) {
+				const [withdrawalStatus, campaignInfo] = await Promise.all([
+					contract.checkWithdrawalStatus(donation.campaignId),
+					contract.getCampaignDetails(donation.campaignId),
+				]);
 
-        // Convert BigNumber values to strings and create status object
-        const status = {
-          isActive: withdrawalStatus[0],
-          metadataHash: withdrawalStatus[1],
-          totalVotes: withdrawalStatus[2].toString(),
-          votesInFavor: withdrawalStatus[3].toString(),
-          votesAgainst: withdrawalStatus[4].toString(),
-          totalDonors: withdrawalStatus[5].toString(),
-          hasVoted: withdrawalStatus[6],
-          allVoted: withdrawalStatus[7],
-          canClaim: withdrawalStatus[8],
-          requested: ethers.formatEther(withdrawalStatus[9]),
-        };
+				const status = {
+					isActive: withdrawalStatus[0],
+					metadataHash: withdrawalStatus[1],
+					totalVotes: withdrawalStatus[2].toString(),
+					votesInFavor: withdrawalStatus[3].toString(),
+					votesAgainst: withdrawalStatus[4].toString(),
+					totalDonors: withdrawalStatus[5].toString(),
+					hasVoted: withdrawalStatus[6],
+					allVoted: withdrawalStatus[7],
+					canClaim: withdrawalStatus[8],
+					requested: ethers.formatEther(withdrawalStatus[9]),
+				};
 
-        if (status.isActive) {
-          try {
-            const [metadataResponse, campaignMetadataResponse] =
-              await Promise.all([
-                fetch(status.metadataHash),
-                fetch(campaignInfo.metadataHash),
-              ]);
+				if (status.isActive) {
+					try {
+						const [metadataResponse, campaignMetadataResponse] =
+							await Promise.all([
+								fetch(status.metadataHash),
+								fetch(campaignInfo.metadataHash),
+							]);
 
-            const [metadata, campaignMetadata] = await Promise.all([
-              metadataResponse.json(),
-              campaignMetadataResponse.json(),
-            ]);
+						const [metadata, campaignMetadata] = await Promise.all([
+							metadataResponse.json(),
+							campaignMetadataResponse.json(),
+						]);
 
-            requests[donation.campaignId] = {
-              ...status,
-              campaignTitle: donation.title,
-              ...metadata,
-            };
+						requests[donation.campaignId] = {
+							...status,
+							campaignTitle: donation.title,
+							...metadata,
+						};
 
-            details[donation.campaignId] = {
-              owner: campaignInfo.owner,
-              title: campaignMetadata.title,
-              image: campaignMetadata.image,
-              target: ethers.formatEther(campaignInfo.target),
-              amountCollected: ethers.formatEther(campaignInfo.amountCollected),
-              deadline: new Date(
-                Number(campaignInfo.deadline) * 1000
-              ).toLocaleDateString(),
-              category: campaignInfo.category,
-            };
-          } catch (err) {
-            console.error(
-              `Failed to fetch metadata for campaign ${donation.campaignId}`,
-              err
-            );
-          }
-        }
-      }
-      setWithdrawalRequests(requests);
-      setCampaignDetails(details);
-    } catch (err) {
-      setError("Failed to fetch donations");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+						details[donation.campaignId] = {
+							owner: campaignInfo.owner,
+							title: campaignMetadata.title,
+							image: campaignMetadata.image,
+							target: ethers.formatEther(campaignInfo.target),
+							amountCollected: ethers.formatEther(campaignInfo.amountCollected),
+							deadline: new Date(
+								Number(campaignInfo.deadline) * 1000
+							).toLocaleDateString(),
+							category: campaignInfo.category,
+						};
+					} catch (err) {
+						console.error(
+							`Failed to fetch metadata for campaign ${donation.campaignId}`,
+							err
+						);
+					}
+				}
+			}
+			setWithdrawalRequests(requests);
+			setCampaignDetails(details);
+		} catch (err) {
+			setError("Failed to fetch donations");
+			console.error(err);
+		} finally {
+			setLoading(false);
+		}
+	};
 
-  const handleVote = async (campaignId, vote) => {
-    try {
-      setVoting((prev) => ({ ...prev, [campaignId]: true }));
-      const contract = await getContract();
+	const handleVote = async (campaignId, vote) => {
+		try {
+			setVoting((prev) => ({ ...prev, [campaignId]: true }));
+			const contract = await getContract();
 
-      const tx = await contract.earlyWithdrawalRequest(
-        campaignId,
-        "",
-        true,
-        0,
-        vote
-      );
+			const tx = await contract.earlyWithdrawalRequest(
+				campaignId,
+				"",
+				true,
+				0,
+				vote
+			);
 
-      await tx.wait();
-      await fetchDonations();
-    } catch (err) {
-      setError("Failed to submit vote");
-      console.error(err);
-    } finally {
-      setVoting((prev) => ({ ...prev, [campaignId]: false }));
-    }
-  };
+			await tx.wait();
+			await fetchDonations();
+		} catch (err) {
+			setError("Failed to submit vote");
+			console.error(err);
+		} finally {
+			setVoting((prev) => ({ ...prev, [campaignId]: false }));
+		}
+	};
 
-  useEffect(() => {
-    fetchDonations();
-    const interval = setInterval(fetchDonations, 30000);
-    return () => clearInterval(interval);
-  }, []);
+	useEffect(() => {
+		fetchDonations();
+		const interval = setInterval(fetchDonations, 30000);
+		return () => clearInterval(interval);
+	}, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-6">
-        <FiClock className="animate-spin h-8 w-8 text-blue-500" />
-      </div>
-    );
-  }
+	if (loading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black p-2">
+				<Clock className="animate-spin h-12 w-12 text-blue-400" />
+			</div>
+		);
+	}
 
-  if (error) {
-    return (
-      <div className="p-4 bg-red-900/20 border border-red-700 text-red-400 rounded-lg flex items-center">
-        <FiAlertCircle className="w-5 h-5 mr-2" />
-        {error}
-      </div>
-    );
-  }
+	if (error) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-2">
+				<div className="bg-red-900/20 border border-red-700 text-red-400 rounded-xl p-6 text-center max-w-xs w-full">
+					<AlertCircle className="mx-auto h-12 w-12 mb-4" />
+					<p className="text-sm">{error}</p>
+				</div>
+			</div>
+		);
+	}
 
-  if (!hasDonations) {
-    return (
-      <div className="p-6 text-center bg-gray-900 rounded-lg border border-gray-800">
-        <FaDollarSign className="mx-auto h-12 w-12 text-gray-600" />
-        <h3 className="mt-2 text-sm font-medium text-gray-200">
-          No Donations Found
-        </h3>
-        <p className="mt-1 text-sm text-gray-400">
-          You haven't made any donations to campaigns yet. Once you donate to a
-          campaign, you'll be able to vote on withdrawal requests here.
-        </p>
-        <button
-          onClick={() => (window.location.href = "/all-campaigns")}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          View Available Campaigns
-        </button>
-      </div>
-    );
-  }
+	if (!hasDonations) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-2">
+				<div className="bg-gray-800/50 rounded-xl p-6 text-center max-w-xs w-full border border-gray-700">
+					<DollarSign className="mx-auto h-12 w-12 text-gray-500 mb-4" />
+					<h3 className="text-gray-200 font-bold mb-2">No Donations Found</h3>
+					<p className="text-gray-400 text-xs mb-4">
+						You haven't made any donations to campaigns yet.
+					</p>
+					<button
+						className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+						onClick={() => (window.location.href = "/all-campaigns")}
+					>
+						View Campaigns
+					</button>
+				</div>
+			</div>
+		);
+	}
 
-  const activeRequests = Object.entries(withdrawalRequests);
+	const activeRequests = Object.entries(withdrawalRequests);
 
-  if (activeRequests.length === 0) {
-    return (
-      <div className="p-6 text-center bg-gray-900 rounded-lg border border-gray-800">
-        <FiFileText className="mx-auto h-12 w-12 text-gray-600" />
-        <h3 className="mt-2 text-sm font-medium text-gray-200">
-          No active withdrawal requests
-        </h3>
-        <p className="mt-1 text-sm text-gray-400">
-          There are currently no early withdrawal requests for campaigns you've
-          donated to.
-        </p>
-      </div>
-    );
-  }
+	if (activeRequests.length === 0) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-2">
+				<div className="bg-gray-800/50 rounded-xl p-6 text-center max-w-xs w-full border border-gray-700">
+					<FileText className="mx-auto h-12 w-12 text-gray-500 mb-4" />
+					<h3 className="text-gray-200 font-bold mb-2">No Active Requests</h3>
+					<p className="text-gray-400 text-xs mb-4">
+						No early withdrawal requests for your campaigns.
+					</p>
+				</div>
+			</div>
+		);
+	}
 
-  return (
-    <div className="space-y-6">
-      {activeRequests.map(([campaignId, request]) => {
-        const campaign = campaignDetails[campaignId] || {};
-        return (
-          <div
-            key={campaignId}
-            className="bg-gray-900 rounded-xl shadow-lg overflow-hidden border border-gray-800 hover:border-gray-700 transition-colors"
-          >
-            <div className="p-6">
-              {/* Campaign Header with Image */}
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-48 h-48 rounded-lg overflow-hidden flex-shrink-0">
-                  {" "}
-                  {/* Increased size */}
-                  <img
-                    src={campaign.image || "/placeholder.jpg"}
-                    alt={campaign.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                    {campaign.title}
-                  </h2>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <FiUser className="w-4 h-4 text-purple-400" />
-                    <span className="text-gray-400 text-sm">
-                      Owner: {campaign.owner?.slice(0, 6)}...
-                      {campaign.owner?.slice(-4)}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <span className="px-3 py-1 text-xs font-medium bg-blue-900/30 text-blue-400 rounded-full">
-                      {campaign.category}
-                    </span>
-                    <span className="px-3 py-1 text-xs font-medium bg-purple-900/30 text-purple-400 rounded-full">
-                      Target: {campaign.target} ETH
-                    </span>
-                  </div>
-                </div>
-              </div>
+	return (
+		<div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-2 sm:p-4">
+			<div className="container mx-auto max-w-md space-y-4">
+				{activeRequests.map(([campaignId, request]) => {
+					const campaign = campaignDetails[campaignId] || {};
+					return (
+						<div
+							key={campaignId}
+							className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 hover:border-blue-600 transition-all"
+						>
+							<div className="flex items-center space-x-4 mb-4">
+								<img
+									src={campaign.image || "/placeholder.jpg"}
+									alt={campaign.title}
+									className="w-16 h-16 rounded-lg object-cover"
+								/>
+								<div>
+									<h2 className="text-lg font-bold text-blue-300">
+										{campaign.title}
+									</h2>
+									<p className="text-xs text-gray-400 flex items-center">
+										<User className="w-3 h-3 mr-1" />
+										Owner: {campaign.owner?.slice(0, 6)}...
+										{campaign.owner?.slice(-4)}
+									</p>
+								</div>
+							</div>
 
-              {/* Request Details */}
-              <div className="border-t border-b border-gray-800 py-4 my-4">
-                <h3 className="text-lg font-semibold text-purple-400 mb-2">
-                  Withdrawal Request Details
-                </h3>
-                <div className="space-y-2">
-                  <div className="flex items-start space-x-2">
-                    <span className="text-blue-400 font-medium">Title:</span>
-                    <p className="text-gray-300">{request.title}</p>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <span className="text-blue-400 font-medium">Reason:</span>
-                    <p className="text-gray-300">{request.description}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-blue-400 font-medium">
-                      Request Amount:
-                    </span>
-                    <p className="flex items-center text-green-400">
-                      <FiDollarSign className="w-4 h-4 mr-1" />
-                      {request.requested} ETH
-                    </p>
-                  </div>
-                </div>
-              </div>
+							<div className="space-y-2 mb-4">
+								<div className="flex justify-between bg-gray-900 p-2 rounded-lg">
+									<span className="text-sm text-gray-400">Request Amount</span>
+									<span className="text-green-400 font-bold">
+										{request.requested} ETH
+									</span>
+								</div>
+								<div className="flex justify-between bg-gray-900 p-2 rounded-lg">
+									<span className="text-sm text-gray-400">Votes</span>
+									<div className="flex space-x-2">
+										<span className="text-green-400 font-bold">
+											{request.votesInFavor} ✓
+										</span>
+										<span className="text-red-400 font-bold">
+											{request.votesAgainst} ✗
+										</span>
+									</div>
+								</div>
+							</div>
 
-              {/* Voting Status */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-blue-400">
-                      <FiUsers className="w-4 h-4 mr-2" />
-                      <span>Total Donors:</span>
-                    </div>
-                    <span className="text-lg font-semibold text-white">
-                      {request.totalDonors || 0}
-                    </span>
-                  </div>
-                </div>
-                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-green-400">
-                      <FiCheckCircle className="w-4 h-4 mr-2" />
-                      <span>In Favor:</span>
-                    </div>
-                    <span className="text-lg font-semibold text-white">
-                      {request.votesInFavor || 0}
-                    </span>
-                  </div>
-                </div>
-                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-red-400">
-                      <FiAlertCircle className="w-4 h-4 mr-2" />
-                      <span>Against:</span>
-                    </div>
-                    <span className="text-lg font-semibold text-white">
-                      {request.votesAgainst || 0}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Voting Status */}
-              <div className="mt-4 bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center">
-                    <span className="text-yellow-400 font-medium mr-2">
-                      All Voted:
-                    </span>
-                    <span
-                      className={
-                        request.allVoted ? "text-green-400" : "text-gray-400"
-                      }
-                    >
-                      {request.allVoted ? "Yes" : "No"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Voting Actions */}
-              {!request.hasVoted ? (
-                <div className="mt-6 flex space-x-3">
-                  <button
-                    onClick={() => handleVote(campaignId, true)}
-                    disabled={voting[campaignId]}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-                  >
-                    {voting[campaignId] ? (
-                      <>
-                        <FiClock className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <FiCheckCircle className="w-4 h-4 mr-2" />
-                        Approve
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleVote(campaignId, false)}
-                    disabled={voting[campaignId]}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-                  >
-                    {voting[campaignId] ? (
-                      <>
-                        <FiClock className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <FiAlertCircle className="w-4 h-4 mr-2" />
-                        Reject
-                      </>
-                    )}
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-6 flex items-center justify-center p-3 bg-gray-800/50 rounded-lg border border-gray-700">
-                  <FiCheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <p className="text-sm text-gray-300">
-                    You have already voted on this request
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+							{!request.hasVoted ? (
+								<div className="flex space-x-2">
+									<button
+										onClick={() => handleVote(campaignId, true)}
+										disabled={voting[campaignId]}
+										className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center justify-center disabled:opacity-50"
+									>
+										<CheckCircle className="w-4 h-4 mr-2" />
+										{voting[campaignId] ? "Processing..." : "Approve"}
+									</button>
+									<button
+										onClick={() => handleVote(campaignId, false)}
+										disabled={voting[campaignId]}
+										className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors text-sm flex items-center justify-center disabled:opacity-50"
+									>
+										<AlertCircle className="w-4 h-4 mr-2" />
+										{voting[campaignId] ? "Processing..." : "Reject"}
+									</button>
+								</div>
+							) : (
+								<div className="bg-gray-900 p-2 rounded-lg text-center">
+									<p className="text-gray-400 text-sm flex items-center justify-center">
+										<CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+										You've already voted
+									</p>
+								</div>
+							)}
+						</div>
+					);
+				})}
+			</div>
+		</div>
+	);
 };
 
 export default DonorWithdrawalVotes;

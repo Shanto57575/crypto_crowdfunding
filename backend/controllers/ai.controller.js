@@ -10,7 +10,7 @@ const RELEVANT_KEYWORDS = [
     'dao', 'defi', 'token', 'ethereum', 'web3', 'dapp', 'wallet', 'mining',
     'nft', 'ico', 'stake', 'consensus', 'block', 'hash', 'transaction',
     'solidity', 'metamask', 'gas fee', 'decentralized', 'fundchain', "etehrs", "web3", "Dapps",
-    'shanto', 'mahtab', 'akil', 'kafi', 'abdullahil', "sir", 'creator', 'team', "asking", "about", "you",
+    'Md. Shahidul Islam shanto', 'Md. Mahtab Uddin', 'Akil Tajwar chowdhury', 'kafi', 'abdullahil', "sir", 'creator', 'team', "asking", "about", "you",
     'developer', 'supervisor', 'founder', 'lead', 'member', "chain", "chat", "ai", "chain chat", "ai"
 ];
 
@@ -46,9 +46,9 @@ const SYSTEM_PROMPT = `I am Chain Chat, the AI assistant for FundChain - an inno
 FundChain was developed by Shanto, Mahtab, and Akil as their final year undergraduate thesis/project, with guidance from our supervisor, Abdullahil Kafi.
 
 Key Information about the Team:
-- The FundChain project is led by Shanto, who developed core functionalities and integrated the AI-powered chatbot, Chain Chat, to provide personalized support within the platform.
-- Mahtab played a crucial role in developing key features that enhance FundChain’s core functionality and improve user engagement, ensuring a smooth and efficient experience.
-- Akil contributed by designing the user interface and crafting a cohesive design system that gives the platform a polished, professional look.
+- The FundChain project is led by Md. Shahidul Islam shanto, who developed core functionalities and integrated the AI-powered chatbot, Chain Chat, to provide personalized support within the platform.
+- Md. Mahtab Uddin played a crucial role in developing key features that enhance FundChain’s core functionality and improve user engagement, ensuring a smooth and efficient experience.
+- Akil Tajwar chowdhury contributed by designing the user interface and crafting a cohesive design system that gives the platform a polished, professional look.
 - Abdullahil Kafi served as the supervisor, offering valuable insights and guidance throughout the development of FundChain.
 - Kafi served as the supervisor, offering valuable insights and guidance throughout the development of FundChain.
 - Kafi sir served as the supervisor, offering valuable insights and guidance throughout the development of FundChain.

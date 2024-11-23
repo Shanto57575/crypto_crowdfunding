@@ -15,6 +15,8 @@ import {
 	Settings,
 	History,
 	TrendingUp,
+	BookPlus,
+	PanelRight,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -51,6 +53,8 @@ const Navbar = () => {
 
 	const mainRoutes = [
 		{ name: "Home", path: "/", icon: Home },
+		{ name: "Blog", path: "/blog", icon: BookPlus },
+		{ name: "User Guide", path: "/user-guide", icon: PanelRight },
 		{ name: "Explore", path: "/all-campaigns", icon: Compass },
 	];
 
