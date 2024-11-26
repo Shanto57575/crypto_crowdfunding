@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { createContext, useContext, useEffect, useState } from "react";
-import { BrowserProvider } from "ethers";
+import { BrowserProvider, formatEther } from "ethers";
 import { jwtDecode } from "jwt-decode";
 
 const WalletContext = createContext();
@@ -12,6 +12,7 @@ export const WalletProvider = ({ children }) => {
 	const [userAddress, setUserAddress] = useState(null);
 	const [isConnecting, setIsConnecting] = useState(false);
 	const [token, setToken] = useState(localStorage.getItem("authToken"));
+	const [walletBalance, setWalletBalance] = useState(null);
 
 	useEffect(() => {
 		const checkWalletConnection = async () => {
@@ -60,11 +61,10 @@ export const WalletProvider = ({ children }) => {
 
 	const handleAccountsChanged = (accounts) => {
 		if (accounts.length === 0) {
-			handleDisconnect(); // Clear everything when no account is connected
+			handleDisconnect();
 		} else {
 			const newAddress = accounts[0];
 
-			// Clear previous state if user changes account
 			if (userAddress && userAddress !== newAddress) {
 				localStorage.removeItem("authToken");
 				localStorage.removeItem("userAddress");
@@ -122,9 +122,11 @@ export const WalletProvider = ({ children }) => {
 
 			const message = `Sign here to verify your wallet: ${nonce}`;
 			const provider = new BrowserProvider(window.ethereum);
+			let userbalance = await provider.getBalance(address);
+			const balanceInEth = formatEther(userbalance);
+			setWalletBalance(balanceInEth);
 			const signer = await provider.getSigner();
 			const signature = await signer.signMessage(message);
-			console.log("SIGNATURE=>", signature);
 
 			const verifyResponse = await fetch(`${API_URL}/api/auth/verify`, {
 				method: "POST",
@@ -233,6 +235,7 @@ export const WalletProvider = ({ children }) => {
 		<WalletContext.Provider
 			value={{
 				userAddress,
+				walletBalance,
 				connectWallet,
 				isConnecting,
 				token,

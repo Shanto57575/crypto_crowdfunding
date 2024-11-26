@@ -444,8 +444,6 @@ const ViewDetails = () => {
 						<MessageCircle className="h-6 w-6" />
 					</motion.button>
 				</div>
-
-				{/* Share Modal */}
 				<ShareModal />
 			</div>
 		</div>
