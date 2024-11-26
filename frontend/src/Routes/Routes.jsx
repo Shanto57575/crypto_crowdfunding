@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import CampaignList from "../Components/CampaignList";
 import CreateCampaign from "../Components/CreateCampaign";
 import ErrorPage from "../Components/ErrorPage";
 import MyCampaign from "../Components/MyCampaign";
@@ -10,6 +9,7 @@ import Home from "../Pages/Home";
 import PrivateRoutes from "./PrivateRoutes";
 import Tutorial from "../Components/Tutorial";
 import Blog from "../Components/Blog";
+import { CampaignList } from "../Components/CampaignList/CampaignList";
 
 export const router = createBrowserRouter([
 	{

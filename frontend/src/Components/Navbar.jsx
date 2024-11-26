@@ -36,7 +36,6 @@ const Navbar = () => {
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
 
-	// Handle click outside for dashboard dropdown
 	useEffect(() => {
 		const handleClickOutside = (event) => {
 			if (
