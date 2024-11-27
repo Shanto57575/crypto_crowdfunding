@@ -1,7 +1,7 @@
+import toast from "react-hot-toast";
 import { formatEther, parseEther } from "ethers";
 import { Calendar, Coins, Image as ImageIcon, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { getContract } from "../helper/contract";
 import { uploadToIPFS } from "../helper/ipfsService";
 
@@ -60,6 +60,7 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 			const metadataBlob = new Blob([JSON.stringify(metadata)], {
 				type: "application/json",
 			});
+
 			const metadataUpload = await uploadToIPFS(metadataBlob);
 			if (!metadataUpload?.url) throw new Error("Metadata upload failed");
 
@@ -79,9 +80,22 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 			onUpdateSuccess();
 			onClose();
 		} catch (err) {
-			console.error("Campaign update failed:", err);
-			setError(err.message || "Failed to update campaign");
-			toast.error(<h1 className="font-serif">{err.message}</h1>);
+			const isUserRejected =
+				err.code === 4001 ||
+				err.reason === "rejected" ||
+				err.message.includes("user rejected") ||
+				err.message.includes("User denied transaction signature");
+
+			if (isUserRejected) {
+				toast.error(
+					<h1 className="font-serif">Transaction was cancelled by user</h1>
+				);
+			} else {
+				const errorMessage = err.message || "Failed to update campaign";
+				toast.error(<h1 className="font-serif">{errorMessage}</h1>);
+			}
+
+			onClose();
 		} finally {
 			setLoading(false);
 		}
@@ -101,7 +115,6 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 		}
 	};
 
-	// New function to handle image URL preview
 	const handleImageUrlChange = (url) => {
 		setFormData((prev) => ({ ...prev, image: url }));
 		setImagePreview(url);
@@ -112,14 +125,12 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 	return (
 		<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
 			<div className="bg-gray-900 rounded-xl w-full max-w-3xl overflow-y-auto max-h-[90vh] relative animate-in fade-in duration-300">
-				{/* Close button for mobile */}
 				<button
 					onClick={onClose}
 					className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors z-10"
 				>
 					<X className="w-6 h-6" />
 				</button>
-
 				<div className="flex flex-col lg:flex-row">
 					{/* Image Section */}
 					<div className="w-full lg:w-2/5 p-6 border-b lg:border-b-0 lg:border-r border-gray-700">
@@ -155,7 +166,6 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 									<option value="upload">Upload Image</option>
 								</select>
 							</div>
-
 							{imageMethod === "url" ? (
 								<input
 									type="url"
@@ -254,7 +264,6 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 									</div>
 								</div>
 							</div>
-
 							<div>
 								<label className="block text-sm font-medium text-gray-300 mb-2">
 									Description
@@ -273,7 +282,6 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 									required
 								/>
 							</div>
-
 							<button
 								type="submit"
 								disabled={loading}

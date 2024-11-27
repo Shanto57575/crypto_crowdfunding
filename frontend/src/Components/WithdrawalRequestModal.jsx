@@ -203,7 +203,6 @@ const WithdrawalRequestModal = ({
 								id="amount"
 								name="amount"
 								type="number"
-								min="0.000000000000000001"
 								value={amount}
 								onChange={handleAmountChange}
 								placeholder="0.00"

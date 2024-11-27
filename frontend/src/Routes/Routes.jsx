@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import CreateCampaign from "../Components/CreateCampaign";
 import ErrorPage from "../Components/ErrorPage";
-import MyCampaign from "../Components/MyCampaign";
 import MyDonation from "../Components/MyDonation";
 import ViewDetails from "../Components/ViewDetails";
 import Main from "../Layout/Main";
@@ -10,6 +9,7 @@ import PrivateRoutes from "./PrivateRoutes";
 import Tutorial from "../Components/Tutorial";
 import Blog from "../Components/Blog";
 import { CampaignList } from "../Components/CampaignList/CampaignList";
+import MyCampaign from "../Components/MyCampaign/MyCampaign";
 
 export const router = createBrowserRouter([
 	{
