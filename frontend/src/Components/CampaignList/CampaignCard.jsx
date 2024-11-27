@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ethers } from "ethers";
+import { motion } from "framer-motion";
 import {
-	Users,
-	HeartIcon,
-	Share2Icon,
-	Target,
-	TrendingUp,
-	ArrowUpRight,
-	Loader2,
 	Wallet,
 	Clock,
+	ChevronRight,
+	Heart,
+	Share2,
+	Target,
+	TrendingUp,
+	RefreshCw,
 	CheckCircle2,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -229,189 +229,207 @@ export function CampaignCard({ campaign }) {
 		}
 	};
 
+	const progressPercentage = Math.min(
+		(Number(campaign.amountCollected) / Number(campaign.target)) * 100,
+		100
+	);
+
 	return (
-		<div className="group relative">
-			<div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-			<div className="relative bg-gray-800 rounded-xl overflow-hidden border border-gray-700 backdrop-blur-xl">
+		<motion.div
+			initial={{ opacity: 0, scale: 0.95 }}
+			animate={{ opacity: 1, scale: 1 }}
+			transition={{ duration: 0.3 }}
+			className="relative max-w-md mx-auto"
+		>
+			<div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 to-purple-500/10 rounded-3xl blur-2xl opacity-50"></div>
+
+			<div className="relative bg-gray-900 border border-gray-800 rounded-3xl overflow-hidden shadow-2xl">
+				{/* Image Section */}
 				{campaign.image && (
-					<div className="relative h-48 overflow-hidden">
+					<div className="relative h-56 overflow-hidden">
 						<img
 							src={campaign.image}
 							alt={campaign.title}
-							className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+							className="absolute inset-0 w-full h-full object-cover filter brightness-75"
 						/>
-						<div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent">
-							<div className="absolute bottom-4 left-4 flex items-center space-x-2">
-								<div className="h-10 w-10 rounded-full bg-gray-800/80 backdrop-blur-sm flex items-center justify-center">
-									<Users className="h-5 w-5 text-indigo-400" />
-								</div>
-								<div className="px-4 py-2 rounded-full bg-gray-800/80 backdrop-blur-sm">
-									<p className="text-sm text-gray-100">
-										{`${campaign.owner.slice(0, 6)}...${campaign.owner.slice(
-											-4
-										)}`}
-									</p>
-								</div>
+						<div className="absolute bottom-4 left-4 right-4 flex justify-between items-center">
+							<div className="bg-black/50 rounded-full px-4 py-2 flex items-center space-x-2">
+								<span className="text-white text-sm">
+									{`${campaign.owner.slice(0, 6)}...${campaign.owner.slice(
+										-4
+									)}`}
+								</span>
+							</div>
+							<div className="flex space-x-2">
+								<motion.button
+									whileHover={{ scale: 1.1 }}
+									whileTap={{ scale: 0.9 }}
+									className="bg-black/50 p-2 rounded-full backdrop-blur-sm"
+								>
+									<Heart className="text-white w-5 h-5" />
+								</motion.button>
+								<motion.button
+									whileHover={{ scale: 1.1 }}
+									whileTap={{ scale: 0.9 }}
+									className="bg-black/50 p-2 rounded-full backdrop-blur-sm"
+								>
+									<Share2 className="text-white w-5 h-5" />
+								</motion.button>
 							</div>
 						</div>
 					</div>
 				)}
 
+				{/* Content Section */}
 				<div className="p-6 space-y-6">
-					<div className="flex justify-between items-start">
-						<h2 className="text-xl font-semibold text-gray-100 group-hover:text-white transition-colors">
-							{campaign.title.slice(0, 23)}
-							{campaign.title.length > 23 && "..."}
+					{/* Campaign Title and Description */}
+					<div>
+						<h2 className="text-2xl font-bold text-white mb-2">
+							{campaign.title.length > 30
+								? `${campaign.title.slice(0, 30)}...`
+								: campaign.title}
 						</h2>
-						<div className="flex gap-2">
-							<button className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors group/btn">
-								<HeartIcon className="w-4 h-4 text-gray-400 group-hover/btn:text-red-400 transition-colors" />
-							</button>
-							<button className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors group/btn">
-								<Share2Icon className="w-4 h-4 text-gray-400 group-hover/btn:text-indigo-400 transition-colors" />
-							</button>
-						</div>
+						<p className="text-gray-400 text-sm line-clamp-2">
+							{campaign.description.slice(0, 50)}...
+						</p>
 					</div>
 
-					<p className="text-gray-400 text-sm line-clamp-2">
-						{campaign.description}
-					</p>
-
+					{/* Campaign Stats */}
 					<div className="grid grid-cols-2 gap-4">
-						<div className="bg-gray-700 rounded-xl p-4 backdrop-blur-sm border border-gray-600 group-hover:border-indigo-500/20 transition-colors">
-							<div className="flex items-center gap-2 text-gray-400 mb-2">
-								<Target className="w-4 h-4" />
-								<span className="text-xs font-medium">Target</span>
+						<div className="bg-gray-800 rounded-xl p-4 space-y-2">
+							<div className="flex items-center space-x-2">
+								<Target className="w-5 h-5 text-cyan-400" />
+								<span className="text-gray-300 text-xs">Target</span>
 							</div>
-							<p className="text-gray-100 font-bold">{campaign.target} ETH</p>
+							<p className="text-white font-bold">{campaign.target} ETH</p>
 						</div>
-						<div className="bg-gray-700 rounded-xl p-4 backdrop-blur-sm border border-gray-600 group-hover:border-indigo-500/20 transition-colors">
-							<div className="flex items-center gap-2 text-gray-400 mb-2">
-								<TrendingUp className="w-4 h-4" />
-								<span className="text-xs font-medium">Raised</span>
+						<div className="bg-gray-800 rounded-xl p-4 space-y-2">
+							<div className="flex items-center space-x-2">
+								<TrendingUp className="w-5 h-5 text-green-400" />
+								<span className="text-gray-300 text-xs">Raised</span>
 							</div>
-							<p className="text-gray-100 font-bold overflow-x-scroll">
-								{campaign.amountCollected} ETH
+							<p className="text-white font-bold">
+								{campaign.amountCollected.slice(0, 8)}+ ETH
 							</p>
 						</div>
 					</div>
 
-					<div className="space-y-3">
+					{/* Progress Bar */}
+					<div className="space-y-2">
 						<div className="flex justify-between text-sm">
 							<span className="text-gray-400">Progress</span>
-							<span className="text-gray-300">
-								{(
-									(Number(campaign.amountCollected) / Number(campaign.target)) *
-									100
-								).toFixed(1)}
-								%
+							<span className="text-white">
+								{progressPercentage.toFixed(1)}%
 							</span>
 						</div>
-						<div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-							<div
-								className="h-full bg-gradient-to-r from-indigo-600 to-purple-500 transition-all duration-300"
-								style={{
-									width: `${Math.min(
-										(Number(campaign.amountCollected) /
-											Number(campaign.target)) *
-											100,
-										100
-									)}%`,
-								}}
-							></div>
+						<div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+							<motion.div
+								initial={{ width: 0 }}
+								animate={{ width: `${progressPercentage}%` }}
+								transition={{ duration: 0.5, type: "spring" }}
+								className="h-full bg-gradient-to-r from-cyan-500 to-purple-500"
+							/>
 						</div>
 					</div>
 
+					{/* Donation Section */}
 					{!campaign.claimed && new Date() < campaign.deadline && (
 						<div className="space-y-4">
-							<div className="flex flex-col gap-4">
-								<div className="flex gap-2">
-									<input
-										type="number"
-										placeholder="Amount"
-										className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 text-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:outline-none transition-all placeholder-gray-500"
-										value={donationAmount}
-										onChange={(e) => setDonationAmount(e.target.value)}
-									/>
-									<select
-										className="px-4 py-3 bg-gray-700 border border-gray-600 text-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:outline-none transition-all"
-										value={donationCurrency}
-										onChange={(e) => setDonationCurrency(e.target.value)}
-									>
-										<option value="ETH">ETH</option>
-										<option value="USD">USD</option>
-										<option value="BDT">BDT</option>
-									</select>
-								</div>
-								<button
-									onClick={handleDonate}
-									disabled={isLoading}
-									className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group/btn"
+							<div className="flex space-x-2">
+								<input
+									type="number"
+									placeholder="Donation Amount"
+									className="flex-grow px-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-cyan-500/50"
+									value={donationAmount}
+									onChange={(e) => setDonationAmount(e.target.value)}
+								/>
+								<select
+									className="px-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-xl"
+									value={donationCurrency}
+									onChange={(e) => setDonationCurrency(e.target.value)}
 								>
-									{isLoading ? (
-										<>
-											<Loader2 className="w-4 h-4 animate-spin" />
-											<span>Donating</span>
-										</>
-									) : (
-										<>
-											<span>Donate</span>
-											<ArrowUpRight className="w-4 h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-										</>
-									)}
-								</button>
+									<option value="ETH">ETH</option>
+									<option value="USD">USD</option>
+									<option value="BDT">BDT</option>
+								</select>
 							</div>
-						</div>
-					)}
-
-					{campaign.claimed && (
-						<div className="bg-green-900/20 border border-green-500/20 rounded-xl p-4 flex items-center gap-3 backdrop-blur-sm">
-							<CheckCircle2 className="w-5 h-5 text-green-400" />
-							<p className="text-green-400 font-medium">
-								Campaign funds claimed
-							</p>
-						</div>
-					)}
-
-					<Link
-						to={`view-details/${campaign.id}`}
-						className="block mt-6 group/link"
-					>
-						<button className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
-							<span>View Details</span>
-							<ArrowUpRight className="w-4 h-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-						</button>
-					</Link>
-
-					{new Date() >= campaign.deadline && !campaign.claimed && (
-						<div className="space-y-4">
-							<div className="bg-gray-700 border border-gray-600 rounded-xl p-4 flex items-center gap-3">
-								<Clock className="w-5 h-5 text-gray-400" />
-								<p className="text-gray-400 font-medium">
-									Campaign ended, awaiting claim
-								</p>
-							</div>
-							<button
-								onClick={handleClaimFunds}
+							<motion.button
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								onClick={handleDonate}
 								disabled={isLoading}
-								className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+								className="w-full px-6 py-3 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 border-purple-400 text-purple-100 rounded-xl 
+                                    disabled:opacity-50 flex items-center justify-center space-x-2"
 							>
 								{isLoading ? (
 									<>
-										<Loader2 className="w-4 h-4 animate-spin" />
-										<span>Claiming...</span>
+										<RefreshCw className="w-4 h-4 animate-spin" />
+										<span>Donating...</span>
 									</>
 								) : (
 									<>
-										<Wallet className="w-4 h-4" />
-										<span>Claim Funds</span>
+										<span>Donate</span>
+										<ChevronRight className="w-4 h-4" />
 									</>
 								)}
-							</button>
+							</motion.button>
 						</div>
 					)}
+
+					{/* Campaign Claimed Section */}
+					{campaign.claimed && (
+						<div className="bg-green-900/20 border border-green-500/30 rounded-xl p-4 flex items-center space-x-3">
+							<CheckCircle2 className="w-5 h-5 text-green-400" />
+							<p className="text-green-400">Campaign Funds Claimed</p>
+						</div>
+					)}
+
+					{/* View Details and Claim Funds Sections */}
+					<div className="space-y-4">
+						<Link to={`view-details/${campaign.id}`}>
+							<motion.button
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								className="w-full bg-gray-800 text-white py-3 px-6 rounded-xl flex items-center justify-center space-x-2"
+							>
+								<span>View Details</span>
+								<ChevronRight className="w-4 h-4" />
+							</motion.button>
+						</Link>
+
+						{new Date() >= campaign.deadline && !campaign.claimed && (
+							<div className="space-y-4">
+								<div className="bg-gray-800 rounded-xl p-4 flex items-center space-x-3">
+									<Clock className="w-5 h-5 text-gray-400" />
+									<p className="text-gray-300">
+										Campaign Ended, Awaiting Claim
+									</p>
+								</div>
+								<motion.button
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.95 }}
+									onClick={handleClaimFunds}
+									disabled={isLoading}
+									className="w-full px-4 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 
+                                        text-white rounded-xl disabled:opacity-50 flex items-center justify-center space-x-2"
+								>
+									{isLoading ? (
+										<>
+											<RefreshCw className="w-4 h-4 animate-spin" />
+											<span>Claiming...</span>
+										</>
+									) : (
+										<>
+											<Wallet className="w-4 h-4" />
+											<span>Claim Funds</span>
+										</>
+									)}
+								</motion.button>
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
-		</div>
+		</motion.div>
 	);
 }
