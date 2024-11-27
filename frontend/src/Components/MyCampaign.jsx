@@ -68,9 +68,17 @@ const MyCampaign = () => {
         if (allVoted) {
           if (canClaim) {
             const tx = await contract.withdrawFundsAfterVote(campaignId);
-            toast.success("Donors Accepted the Request");
+            toast.success(
+              <h1 className="font-serif text-center">
+                Donors Accepted the Request
+              </h1>
+            );
             await tx.wait();
-            toast.success("Funds withdrawn successfully");
+            toast.success(
+              <h1 className="font-serif text-center">
+                Funds withdrawn successfully
+              </h1>
+            );
           } else {
             const tx = await contract.donorsRefuseEarlyWithdraw(campaignId);
             await tx.wait();
@@ -78,7 +86,10 @@ const MyCampaign = () => {
           }
         } else {
           toast(
-            `Total donors: ${totalVotes}. Voting in progress: ${votesInFavor} in favor & ${votesAgainst} against.`
+            <h1 className="font-serif text-center">
+              {`Total donors: ${totalVotes}. Voting in progress: ${votesInFavor}
+							in favor & ${votesAgainst} against`}
+            </h1>
           );
         }
       } else {

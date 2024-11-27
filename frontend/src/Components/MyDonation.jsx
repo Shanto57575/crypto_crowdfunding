@@ -1,327 +1,266 @@
-import { ethers } from "ethers";
-import { ChartBarIcon, WalletIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+	Wallet,
+	TrendingUp,
+	Calendar,
+	CreditCard,
+	ChevronDown,
+	Zap,
+	Award,
+	PieChart,
+} from "lucide-react";
+import { ethers } from "ethers";
 import { getContract } from "../helper/contract";
 import DonorWithdrawalVotes from "./DonorWithdrawalVotes";
+
 const MyDonation = () => {
-  const [donations, setDonations] = useState([]);
-  const [donationTotals, setDonationTotals] = useState(null);
-  const [campaignDetails, setCampaignDetails] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+	const [donations, setDonations] = useState([]);
+	const [expanded, setExpanded] = useState(null);
+	const [stats, setStats] = useState({
+		totalDonated: 0,
+		campaignCount: 0,
+		averageDonation: 0,
+	});
 
-  const fetchMetadata = async (metadataHash) => {
-    try {
-      const response = await fetch(metadataHash);
-      if (!response.ok) {
-        throw new Error("Failed to fetch campaign metadata");
-      }
-      return await response.json();
-    } catch (err) {
-      console.error("Error fetching metadata:", err);
-      return { error: "Failed to load metadata" };
-    }
-  };
+	const fetchDonations = async () => {
+		try {
+			const contract = await getContract();
+			const [donationData, totalsData] = await Promise.all([
+				contract.getMyDonations(),
+				contract.getMyDonationTotals(),
+			]);
 
-  const fetchCampaignDetails = async (campaignId) => {
-    try {
-      const contract = await getContract();
-      const details = await contract.getCampaignDetails(campaignId);
+			const formattedDonations = donationData.map((donation) => ({
+				campaignId: donation.campaignId,
+				amount: ethers.formatEther(donation.amount),
+				timestamp: new Date(
+					Number(donation.timestamp) * 1000
+				).toLocaleDateString(),
+				category: donation.category,
+				isRefunded: donation.isRefunded,
+			}));
 
-      // Fetch metadata from IPFS hash
-      const metadata = await fetchMetadata(details.metadataHash);
+			const totalDonated = formattedDonations.reduce(
+				(sum, d) => sum + parseFloat(d.amount),
+				0
+			);
+			const campaignCount = new Set(formattedDonations.map((d) => d.campaignId))
+				.size;
 
-      return {
-        ...metadata, // Spread the metadata (title, description, image, etc.)
-        target: ethers.formatEther(details.target),
-        deadline: details.deadline.toString(),
-        amountCollected: ethers.formatEther(details.amountCollected),
-        owner: details.owner,
-      };
-    } catch (err) {
-      console.error(`Error fetching details for campaign ${campaignId}:`, err);
-      return null;
-    }
-  };
+			setDonations(formattedDonations);
+			setStats({
+				totalDonated,
+				campaignCount,
+				averageDonation: totalDonated / campaignCount || 0,
+			});
+		} catch (error) {
+			console.error("Donation fetch failed", error);
+		}
+	};
 
-  const getMyDonations = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const contract = await getContract();
-      const [donationData, totalsData] = await Promise.all([
-        contract.getMyDonations(),
-        contract.getMyDonationTotals(),
-      ]);
+	useEffect(() => {
+		fetchDonations();
+	}, []);
 
-      const formattedDonations = donationData.map((donation) => ({
-        campaignId: donation.campaignId,
-        amount: ethers.formatEther(donation.amount),
-        isRefunded: donation.isRefunded,
-        category: donation.category,
-        timestamp: donation.timestamp.toString(),
-      }));
+	return (
+		<div className="bg-gradient-to-br from-zinc-900 via-black to-zinc-900 min-h-screen text-white pt-24 px-4 sm:px-6 space-y-8">
+			<motion.div
+				initial={{ opacity: 0, y: -20 }}
+				animate={{ opacity: 1, y: 0 }}
+				className="text-center space-y-6"
+			>
+				<div className="inline-flex items-center bg-white/10 rounded-full px-4 py-2 text-sm mx-auto">
+					<TrendingUp className="w-5 h-5 mr-2 text-purple-400" />
+					Impact Dashboard
+				</div>
+				<h1
+					className="text-4xl sm:text-5xl font-black bg-clip-text text-transparent 
+          bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 
+          animate-text-shimmer"
+				>
+					Your Contribution Journey
+				</h1>
+				<p className="text-white/60 max-w-xl mx-auto text-sm sm:text-base">
+					Transform communities, one donation at a time. Your generosity creates
+					waves of change.
+				</p>
+			</motion.div>
 
-      // Fetch campaign details with metadata for all donations
-      const detailsPromises = [
-        ...new Set(formattedDonations.map((d) => d.campaignId)),
-      ].map((campaignId) => fetchCampaignDetails(campaignId));
-      const details = await Promise.all(detailsPromises);
-      const campaignDetailsMap = Object.fromEntries(
-        [...new Set(formattedDonations.map((d) => d.campaignId))].map(
-          (id, index) => [id, details[index]]
-        )
-      );
+			<div className="grid gap-4 sm:grid-cols-3 max-w-4xl mx-auto">
+				{[
+					{
+						icon: <Wallet className="w-8 h-8 text-purple-400" />,
+						value: `${stats.totalDonated.toFixed(3)} ETH`,
+						label: "Total Donated",
+						bgClass: "from-purple-900/50 to-indigo-900/50",
+					},
+					{
+						icon: <Award className="w-8 h-8 text-pink-400" />,
+						value: stats.campaignCount,
+						label: "Campaigns Supported",
+						bgClass: "from-pink-900/50 to-purple-900/50",
+					},
+					{
+						icon: <PieChart className="w-8 h-8 text-indigo-400" />,
+						value: `${stats.averageDonation.toFixed(2)} ETH`,
+						label: "Avg Donation",
+						bgClass: "from-indigo-900/50 to-blue-900/50",
+					},
+				].map((stat, index) => (
+					<motion.div
+						key={index}
+						initial={{ scale: 0.9, opacity: 0 }}
+						animate={{ scale: 1, opacity: 1 }}
+						transition={{ delay: index * 0.2 }}
+						className={`bg-gradient-to-br ${stat.bgClass} 
+              rounded-2xl p-6 border border-white/10 
+              hover:scale-105 transition-transform duration-300`}
+					>
+						<div className="flex justify-between items-center mb-4">
+							{stat.icon}
+							<span className="text-white/60 text-xs">{stat.label}</span>
+						</div>
+						<p
+							className="text-3xl font-bold bg-clip-text text-transparent 
+              bg-gradient-to-r from-white to-white/60"
+						>
+							{stat.value}
+						</p>
+					</motion.div>
+				))}
+			</div>
 
-      const formattedTotals = {
-        totalAmount: ethers.formatEther(totalsData.totalDonationsAllCampaigns),
-        campaignTotals: totalsData.campaignDonations.map((camp) => ({
-          campaignId: camp.campaignId,
-          category: camp.campaignCategory,
-          total: ethers.formatEther(camp.totalDonated),
-        })),
-      };
+			<motion.div
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				className="max-w-2xl mx-auto space-y-6 pb-16"
+			>
+				<h2
+					className="text-3xl font-bold text-center bg-clip-text text-transparent 
+        bg-gradient-to-r from-purple-400 to-pink-500"
+				>
+					Donation History
+				</h2>
 
-      setDonations(formattedDonations);
-      setDonationTotals(formattedTotals);
-      setCampaignDetails(campaignDetailsMap);
-    } catch (err) {
-      console.error("Error fetching donations:", err);
-      setError("Failed to fetch donations. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+				{donations.length === 0 ? (
+					<motion.div
+						initial={{ scale: 0.9 }}
+						animate={{ scale: 1 }}
+						className="text-center bg-white/5 p-12 rounded-3xl border border-white/10"
+					>
+						<CreditCard className="mx-auto w-20 h-20 text-white/20 mb-6" />
+						<p className="text-white/60 text-xl">
+							Your generosity starts here. Make your first donation!
+						</p>
+					</motion.div>
+				) : (
+					<div className="space-y-4">
+						{donations.map((donation, index) => (
+							<motion.div
+								key={index}
+								layout
+								initial={{ opacity: 0, scale: 0.95 }}
+								animate={{
+									opacity: 1,
+									scale: 1,
+									transition: {
+										duration: 0.2,
+										ease: "easeInOut",
+									},
+								}}
+								exit={{
+									opacity: 0,
+									scale: 0.95,
+									transition: { duration: 0.2 },
+								}}
+								className="bg-white/5 rounded-3xl overflow-hidden border border-white/10 
+                hover:border-purple-500/50 transition-all"
+							>
+								<div
+									onClick={() => setExpanded(expanded === index ? null : index)}
+									className="p-4 sm:p-5 flex justify-between items-center cursor-pointer 
+                  hover:bg-white/10 transition group"
+								>
+									<div className="flex items-center space-x-3 sm:space-x-4">
+										<Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 group-hover:rotate-6 transition" />
+										<span className="text-xs sm:text-sm font-medium truncate max-w-[150px]">
+											{donation.timestamp}
+										</span>
+									</div>
+									<div className="flex items-center space-x-2 sm:space-x-3">
+										<span
+											className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full font-bold uppercase ${
+												donation.isRefunded
+													? "bg-red-900/30 text-red-400"
+													: "bg-purple-900/30 text-purple-400"
+											}`}
+										>
+											{donation.isRefunded ? "Refunded" : "Donated"}
+										</span>
+										<ChevronDown
+											className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${
+												expanded === index ? "rotate-180" : ""
+											}`}
+										/>
+									</div>
+								</div>
 
-  useEffect(() => {
-    getMyDonations();
-  }, []);
+								<AnimatePresence>
+									{expanded === index && (
+										<motion.div
+											initial={{ opacity: 0, height: 0 }}
+											animate={{
+												opacity: 1,
+												height: "auto",
+												transition: {
+													duration: 0.3,
+													ease: "easeInOut",
+												},
+											}}
+											exit={{
+												opacity: 0,
+												height: 0,
+												transition: {
+													duration: 0.2,
+													ease: "easeInOut",
+												},
+											}}
+											className="p-4 sm:p-5 bg-black/40 border-t border-white/10"
+										>
+											<div className="grid grid-cols-2 gap-3 sm:gap-4">
+												<div>
+													<p className="text-[10px] sm:text-xs text-white/60 mb-1">
+														Amount
+													</p>
+													<p className="font-bold text-purple-300 text-sm sm:text-lg">
+														{donation.amount} ETH
+													</p>
+												</div>
+												<div>
+													<p className="text-[10px] sm:text-xs text-white/60 mb-1">
+														Category
+													</p>
+													<p className="capitalize text-white/80 text-sm sm:text-lg flex items-center">
+														<Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-pink-400" />
+														{donation.category}
+													</p>
+												</div>
+											</div>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</motion.div>
+						))}
+					</div>
+				)}
+			</motion.div>
 
-  const formatDate = (timestamp) => {
-    return new Date(Number(timestamp) * 1000).toLocaleDateString();
-  };
-
-  const renderCampaignTitle = (details) => {
-    if (!details) return "Loading...";
-    if (details.error) return "Failed to load campaign details";
-    return details.title || "Untitled Campaign";
-  };
-
-  const renderCampaignImage = (details) => {
-    if (!details || details.error) {
-      return (
-        <img
-          src="/api/placeholder/400/200"
-          alt="Campaign placeholder"
-          className="w-full h-32 object-cover rounded-t-lg"
-        />
-      );
-    }
-    return (
-      <img
-        src={details.image || "/api/placeholder/400/200"}
-        alt={details.title || "Campaign image"}
-        className="w-full h-32 object-cover rounded-t-lg"
-        onError={(e) => {
-          e.target.src = "/api/placeholder/400/200";
-        }}
-      />
-    );
-  };
-
-  return (
-    <div className="p-4 pt-32 max-w-6xl mx-auto bg-gray-900 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">My Donations</h1>
-        {loading && <div className="text-blue-400">Loading...</div>}
-      </div>
-
-      {error && (
-        <div className="bg-red-900/50 border-l-4 border-red-500 p-4 mb-6 rounded">
-          <p className="text-red-400">{error}</p>
-        </div>
-      )}
-
-      {donationTotals && (
-        <div className="mb-8 grid gap-6 md:grid-cols-2">
-          <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 bg-blue-900/50 rounded-lg">
-                <WalletIcon className="h-6 w-6 text-blue-400" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-white">
-                  Total Donations
-                </h2>
-                <p className="text-gray-400">Across all campaigns</p>
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-white">
-              {donationTotals.totalAmount}
-              ETH
-            </p>
-          </div>
-
-          <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 bg-purple-900/50 rounded-lg">
-                <ChartBarIcon className="h-6 w-6 text-purple-400" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-white">
-                  Campaigns Supported
-                </h2>
-                <p className="text-gray-400">Total unique campaigns</p>
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-white">
-              {donationTotals.campaignTotals.length}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {donationTotals && donationTotals.campaignTotals.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">
-            Campaign Totals
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {donationTotals.campaignTotals.map((campaign, index) => (
-              <div
-                key={`${campaign.campaignId}-${index}`}
-                className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden"
-              >
-                {renderCampaignImage(campaignDetails[campaign.campaignId])}
-                <div className="p-6 space-y-3">
-                  <div>
-                    <p className="text-sm text-gray-400">Campaign Title</p>
-                    <p className="text-lg font-semibold text-white">
-                      {renderCampaignTitle(
-                        campaignDetails[campaign.campaignId]
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Campaign ID</p>
-                    <p className="font-mono text-sm text-gray-300">
-                      {campaign.campaignId.slice(0, 10)}...
-                      {campaign.campaignId.slice(32, 42)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Category</p>
-                    <p className="text-gray-300 capitalize">
-                      {campaign.category}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Total Donated</p>
-                    <p className="text-lg font-semibold text-white">
-                      {campaign.total}
-                      ETH
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <h2 className="text-xl font-semibold text-white mb-4">
-        Donation History
-      </h2>
-      {donations.length === 0 && !loading ? (
-        <div className="text-center py-12 bg-gray-800 rounded-lg">
-          <p className="text-gray-400">No donations found</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {donations.map((donation, index) => (
-            <div
-              key={`${donation.campaignId}-${index}`}
-              className="bg-gray-800 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors duration-200 overflow-hidden"
-            >
-              {renderCampaignImage(campaignDetails[donation.campaignId])}
-              <div className="p-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      donation.isRefunded
-                        ? "bg-yellow-900/50 text-yellow-300"
-                        : "bg-green-900/50 text-green-300"
-                    }`}
-                  >
-                    {donation.isRefunded ? "Refunded" : "Active"}
-                  </span>
-                  <span className="text-sm text-gray-400">
-                    {formatDate(donation.timestamp)}
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-400 mb-1">Campaign Title</p>
-                    <p className="text-lg font-semibold text-white">
-                      {renderCampaignTitle(
-                        campaignDetails[donation.campaignId]
-                      )}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-400 mb-1">Campaign ID</p>
-                    <p className="font-mono text-sm text-gray-300">
-                      {donation.campaignId.slice(0, 10)}...
-                      {donation.campaignId.slice(32, 42)}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-400 mb-1">Amount</p>
-                    <p className="text-lg font-semibold text-white">
-                      {donation.amount}
-                      ETH
-                    </p>
-                  </div>
-
-                  {campaignDetails[donation.campaignId] && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-400 mb-1">Target</p>
-                        <p className="text-gray-300">
-                          {campaignDetails[donation.campaignId].target}
-                          ETH
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-400 mb-1">Collected</p>
-                        <p className="text-gray-300">
-                          {campaignDetails[donation.campaignId].amountCollected}
-                          ETH
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <p className="text-sm text-gray-400 mb-1">Category</p>
-                    <p className="text-gray-300 capitalize">
-                      {donation.category}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="my-5">
-        <DonorWithdrawalVotes />
-      </div>
-    </div>
-  );
+			<div className="pb-24 max-w-4xl mx-auto">
+				<DonorWithdrawalVotes />
+			</div>
+		</div>
+	);
 };
 
 export default MyDonation;

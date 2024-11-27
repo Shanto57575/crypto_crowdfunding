@@ -9,7 +9,7 @@ const generateRandomNumber = () => {
 const generateNonce = async (req, res) => {
     try {
         const { address } = req.body;
-        const normalizedAddress = getAddress(address); // Updated for v6.13.4
+        const normalizedAddress = getAddress(address);
 
         let user = await User.findOne({ walletAddress: normalizedAddress });
         const nonce = generateRandomNumber();
