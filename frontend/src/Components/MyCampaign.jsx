@@ -8,6 +8,7 @@ import {
   Clock,
   Edit3,
   Loader2,
+  MessageSquarePlus,
   PlusCircle,
   Tag,
   Target,
@@ -19,6 +20,7 @@ import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
 import { getContract } from "../helper/contract";
+import CreatePostModal from "./CreatePostModal";
 import UpdateCampaign from "./UpdateCampaign";
 import WithdrawalRequestModal from "./WithdrawalRequestModal";
 
@@ -28,7 +30,8 @@ const MyCampaign = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [loadingStates, setLoadingStates] = useState({
@@ -556,6 +559,16 @@ const MyCampaign = () => {
                           </>
                         )}
                       </button>
+                      <button
+                        onClick={() => {
+                          setSelectedCampaign(campaign);
+                          setIsPostModalOpen(true);
+                        }}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all"
+                      >
+                        <MessageSquarePlus className="w-4 h-4" />
+                        Post Update
+                      </button>
                       {campaign.canClaimed > 0 && campaign.claimed == false ? (
                         <button
                           onClick={() => handleWithdraw(campaign, campaign.id)}
@@ -633,6 +646,17 @@ const MyCampaign = () => {
           setSelectedCampaign(null);
         }}
         onWithDrawSuccess={() => {
+          getMyCampaigns();
+        }}
+      />
+      <CreatePostModal
+        campaignId={selectedCampaign?.id}
+        isOpen={isPostModalOpen}
+        onClose={() => {
+          setIsPostModalOpen(false);
+          setSelectedCampaign(null);
+        }}
+        onPostSuccess={() => {
           getMyCampaigns();
         }}
       />
