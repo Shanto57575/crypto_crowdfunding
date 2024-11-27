@@ -10,7 +10,7 @@ const RELEVANT_KEYWORDS = [
     'dao', 'defi', 'token', 'ethereum', 'web3', 'dapp', 'wallet', 'mining',
     'nft', 'ico', 'stake', 'consensus', 'block', 'hash', 'transaction',
     'solidity', 'metamask', 'gas fee', 'decentralized', 'fundchain', "etehrs", "web3", "Dapps",
-    'shanto', 'mahtab', 'akil', 'kafi', 'abdullahil', "sir", 'creator', 'team', "asking", "about", "you",
+    'Md. Shahidul Islam shanto', 'Md. Mahtab Uddin', 'Akil Tajwar chowdhury', 'kafi', 'abdullahil', "sir", 'creator', 'team', "asking", "about", "you",
     'developer', 'supervisor', 'founder', 'lead', 'member', "chain", "chat", "ai", "chain chat", "ai"
 ];
 
@@ -46,9 +46,9 @@ const SYSTEM_PROMPT = `I am Chain Chat, the AI assistant for FundChain - an inno
 FundChain was developed by Shanto, Mahtab, and Akil as their final year undergraduate thesis/project, with guidance from our supervisor, Abdullahil Kafi.
 
 Key Information about the Team:
-- The FundChain project is led by Shanto, who developed core functionalities and integrated the AI-powered chatbot, Chain Chat, to provide personalized support within the platform.
-- Mahtab played a crucial role in developing key features that enhance FundChain’s core functionality and improve user engagement, ensuring a smooth and efficient experience.
-- Akil contributed by designing the user interface and crafting a cohesive design system that gives the platform a polished, professional look.
+- The FundChain project is led by Md. Shahidul Islam shanto, who developed core functionalities and integrated the AI-powered chatbot, Chain Chat, to provide personalized support within the platform.
+- Md. Mahtab Uddin played a crucial role in developing key features that enhance FundChain’s core functionality and improve user engagement, ensuring a smooth and efficient experience.
+- Akil Tajwar chowdhury contributed by designing the user interface and crafting a cohesive design system that gives the platform a polished, professional look.
 - Abdullahil Kafi served as the supervisor, offering valuable insights and guidance throughout the development of FundChain.
 - Kafi served as the supervisor, offering valuable insights and guidance throughout the development of FundChain.
 - Kafi sir served as the supervisor, offering valuable insights and guidance throughout the development of FundChain.
@@ -67,7 +67,24 @@ My primary purpose is to assist users with:
 
 I should acknowledge questions about the development team (Shanto, Mahtab, Akil, and Abdullahil Kafi) while maintaining focus on FundChain and blockchain topics also i will consider wrong spelling related to the blockchain & generate answer.
 
-For other unrelated topics, I'll politely redirect users to blockchain and crowdfunding discussions.`;
+For other unrelated topics, I'll politely redirect users to blockchain and crowdfunding discussions.
+
+Additional Guidelines:
+- Always provide concrete examples when explaining technical concepts
+- Include relevant code snippets or step-by-step instructions when appropriate
+- Suggest related topics based on the user's current knowledge level
+- Acknowledge and correct common misconceptions about blockchain technology
+- Provide analogies to help users understand complex concepts
+- Include relevant safety warnings when discussing financial transactions
+- Stay updated with FundChain's latest features and capabilities
+
+Response Structure:
+1. Direct answer to the question
+2. Supporting explanation or context
+3. Practical example or use case
+4. Related topics or concepts
+5. Safety considerations (if applicable)
+6. Next steps or suggested actions`;
 
 function getSuggestedQuestions(query) {
     const queryLower = query.toLowerCase();
@@ -133,7 +150,6 @@ function isRelevantQuery(query) {
 }
 
 function formatResponse(content, query) {
-    console.log("content: ", content, query)
     if (!content) {
         return "Okay. please ask relevent question!"
     }
@@ -191,7 +207,7 @@ const askQuestions = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 data: {
-                    answer: "It seems like you're asking about something outside of blockchain, cryptocurrency, or crowdfunding topics. I specialize in those areas, so feel free to ask me questions related to them!",
+                    answer: "It seems like you're asking about something outside of blockchain, cryptocurrency, or crowdfunding topics. I specialize in these areas, so feel free to ask questions related to them! If your question is relevant to these topics, please provide more context, and I'll be happy to assist you further.",
                     suggestedQuestions: SUGGESTED_QUESTIONS.beginner,
                     message: "Here are some blockchain-related questions you might find interesting:"
                 }
@@ -237,8 +253,6 @@ const askQuestions = async (req, res) => {
             data: formattedResponse
         });
     } catch (error) {
-        console.error('AI Assistant Error:', error);
-
         // Handle timeout specifically
         if (error.message === 'Request timeout') {
             return res.status(503).json({
@@ -274,7 +288,6 @@ const suggestedQuestions = async (req, res) => {
             data: questions
         });
     } catch (error) {
-        console.error('Error fetching suggested questions:', error);
         res.status(500).json({
             success: false,
             message: "Error fetching suggested questions",

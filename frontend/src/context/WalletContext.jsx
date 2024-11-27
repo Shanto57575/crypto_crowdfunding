@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { createContext, useContext, useEffect, useState } from "react";
-import { BrowserProvider } from "ethers";
+import { BrowserProvider, formatEther } from "ethers";
 import { jwtDecode } from "jwt-decode";
 
 const WalletContext = createContext();
@@ -12,6 +12,7 @@ export const WalletProvider = ({ children }) => {
 	const [userAddress, setUserAddress] = useState(null);
 	const [isConnecting, setIsConnecting] = useState(false);
 	const [token, setToken] = useState(localStorage.getItem("authToken"));
+	const [walletBalance, setWalletBalance] = useState(null);
 
 	useEffect(() => {
 		const checkWalletConnection = async () => {
@@ -62,31 +63,44 @@ export const WalletProvider = ({ children }) => {
 		if (accounts.length === 0) {
 			handleDisconnect();
 		} else {
-			const address = accounts[0];
-			setUserAddress(address);
-			localStorage.setItem("userAddress", address);
+			const newAddress = accounts[0];
 
-			if (!token || localStorage.getItem("authToken") === null) {
-				authenticateWallet(address)
-					.then((newToken) => {
-						if (newToken) {
-							setToken(newToken);
-							localStorage.setItem("authToken", newToken);
-						}
-					})
-					.catch((error) => {
-						console.error("Authentication error on account change:", error);
-					});
+			if (userAddress && userAddress !== newAddress) {
+				localStorage.removeItem("authToken");
+				localStorage.removeItem("userAddress");
+				setToken(null);
+				setUserAddress(null);
+				toast.error(
+					<h1 className="font-serif text-center">
+						Account changed! Please reconnect to authenticate again.
+					</h1>
+				);
 			}
+
+			// Authenticate the new account
+			authenticateWallet(newAddress)
+				.then((newToken) => {
+					if (newToken) {
+						setToken(newToken);
+						setUserAddress(newAddress);
+						localStorage.setItem("authToken", newToken);
+						localStorage.setItem("userAddress", newAddress);
+					}
+				})
+				.catch((error) => {
+					console.error("Authentication error on account change:", error);
+				});
 		}
 	};
 
 	const handleDisconnect = () => {
-		localStorage.removeItem("userAddress");
 		localStorage.removeItem("authToken");
-		toast.success(<h1 className="font-serif">Wallet Disconnected</h1>);
-		setUserAddress(null);
+		localStorage.removeItem("userAddress");
+
 		setToken(null);
+		setUserAddress(null);
+
+		toast.success(<h1 className="font-serif">Wallet Disconnected</h1>);
 	};
 
 	const authenticateWallet = async (address) => {
@@ -108,6 +122,9 @@ export const WalletProvider = ({ children }) => {
 
 			const message = `Sign here to verify your wallet: ${nonce}`;
 			const provider = new BrowserProvider(window.ethereum);
+			let userbalance = await provider.getBalance(address);
+			const balanceInEth = formatEther(userbalance);
+			setWalletBalance(balanceInEth);
 			const signer = await provider.getSigner();
 			const signature = await signer.signMessage(message);
 
@@ -129,11 +146,17 @@ export const WalletProvider = ({ children }) => {
 
 			const { token } = await verifyResponse.json();
 			if (token) {
+				// Save both address and token together
 				localStorage.setItem("authToken", token);
+				localStorage.setItem("userAddress", address);
+
+				setUserAddress(address);
 				setToken(token);
+
 				toast.success(
 					<h1 className="font-serif">Wallet connected successfully!</h1>
 				);
+
 				return token;
 			} else {
 				console.error("Token was not returned:", token);
@@ -165,7 +188,6 @@ export const WalletProvider = ({ children }) => {
 		try {
 			setIsConnecting(true);
 
-			// Directly request accounts - this will prompt MetaMask to unlock if it's locked
 			const accounts = await window.ethereum.request({
 				method: "eth_requestAccounts",
 			});
@@ -213,6 +235,7 @@ export const WalletProvider = ({ children }) => {
 		<WalletContext.Provider
 			value={{
 				userAddress,
+				walletBalance,
 				connectWallet,
 				isConnecting,
 				token,
