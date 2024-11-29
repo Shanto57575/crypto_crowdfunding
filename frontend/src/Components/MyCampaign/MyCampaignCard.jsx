@@ -16,6 +16,9 @@ import {
 	MessageCircle,
 } from "lucide-react";
 import UpdateModal from "./utils/UpdateModal";
+import { getContract } from "../../helper/contract";
+import toast from "react-hot-toast";
+import WithdrawalRequestModal from "../WithdrawalRequestModal";
 
 const MyCampaignCard = ({
 	campaign,
@@ -27,11 +30,15 @@ const MyCampaignCard = ({
 }) => {
 	const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 	const [post, setAllPost] = useState([]);
+	const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
 
 	const getAllPosts = async () => {
-		const response = await fetch("http://localhost:3000/api/post/all-posts", {
-			method: "GET",
-		});
+		const response = await fetch(
+			"https://crypto-crowdfunding-3go8.onrender.com/api/post/all-posts",
+			{
+				method: "GET",
+			}
+		);
 		console.log(response);
 
 		const responseData = await response.json();
@@ -42,6 +49,77 @@ const MyCampaignCard = ({
 	useEffect(() => {
 		getAllPosts();
 	}, []);
+
+	const handleWithdrawalSuccess = () => {
+		onUpdateSuccess();
+		setIsWithdrawalModalOpen(false);
+	};
+
+	const handleWithdraw = async (campaign, campaignId) => {
+		console.log("campaign", campaign);
+		try {
+			setLoadingStates((prev) => ({
+				...prev,
+				withdraw: { ...prev.withdraw, [campaignId]: true },
+			}));
+
+			const contract = await getContract();
+			const status = await contract?.checkWithdrawalStatus(campaignId);
+			console.log("status", status);
+
+			const {
+				isActive,
+				totalVotes,
+				votesInFavor,
+				votesAgainst,
+				totalDonors,
+				allVoted,
+				canClaim,
+			} = status;
+			console.log("canclaim", canClaim);
+			console.log("totalVotes", totalVotes);
+
+			if (isActive) {
+				if (allVoted) {
+					if (canClaim) {
+						const tx = await contract.withdrawFundsAfterVote(campaignId);
+						toast.success(
+							<h1 className="font-serif text-center">
+								Donors Accepted the Request
+							</h1>
+						);
+						await tx.wait();
+						toast.success(
+							<h1 className="font-serif text-center">
+								Funds withdrawn successfully
+							</h1>
+						);
+					} else {
+						const tx = await contract.donorsRefuseEarlyWithdraw(campaignId);
+						await tx.wait();
+						toast.error("Donors did not accept the request");
+					}
+				} else {
+					toast(
+						<h1 className="font-serif text-center">
+							{`Total donors: ${totalDonors}. Voting in progress: ${votesInFavor}
+							in favor & ${votesAgainst} against`}
+						</h1>
+					);
+				}
+			} else {
+				onWithdraw(campaign);
+			}
+		} catch (error) {
+			console.error("Error handling withdrawal:", error);
+			toast.error(error.message || "Failed to process withdrawal request");
+		} finally {
+			setLoadingStates((prev) => ({
+				...prev,
+				withdraw: { ...prev.withdraw, [campaignId]: false },
+			}));
+		}
+	};
 
 	return (
 		<motion.div
@@ -143,7 +221,7 @@ const MyCampaignCard = ({
 					</div>
 
 					{campaign.status == 0 && (
-						<div className="flex gap-3">
+						<div className="flex gap-3 flex-wrap">
 							{!campaign.claimed &&
 								parseEther(campaign.amountCollected) <
 									parseEther(campaign.target) && (
@@ -216,10 +294,10 @@ const MyCampaignCard = ({
 									whileTap={{ scale: 0.98 }}
 									onClick={() => {
 										if (!loadingStates.withdraw[campaign.id]) {
-											onWithdraw(campaign);
+											handleWithdraw(campaign, campaign.id);
 										}
 									}}
-									className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
+									className={`flex-1 flex items-center flex-wrap justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
 										loadingStates.withdraw[campaign.id]
 											? "bg-gray-700 cursor-not-allowed"
 											: "bg-gray-800 hover:bg-gray-700 cursor-pointer"
@@ -298,6 +376,12 @@ const MyCampaignCard = ({
 				onClose={() => setIsUpdateModalOpen(false)}
 				campaignId={campaign.id}
 				post={post}
+			/>
+			<WithdrawalRequestModal
+				isOpen={isWithdrawalModalOpen}
+				onClose={() => setIsWithdrawalModalOpen(false)}
+				campaign={campaign}
+				onWithDrawSuccess={handleWithdrawalSuccess}
 			/>
 		</motion.div>
 	);
