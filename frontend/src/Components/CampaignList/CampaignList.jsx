@@ -172,7 +172,7 @@ export function CampaignList() {
 					</div>
 				</div>
 			) : (
-				<div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mx-auto mt-10">
+				<div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mx-auto w-fit mt-10">
 					{filteredCampaigns.map((campaign) => (
 						<CampaignCard key={campaign.id} campaign={campaign} />
 					))}
