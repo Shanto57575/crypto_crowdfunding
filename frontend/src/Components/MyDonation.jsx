@@ -30,6 +30,7 @@ const MyDonation = () => {
 				contract.getMyDonations(),
 				contract.getMyDonationTotals(),
 			]);
+			console.log(totalsData);
 
 			const formattedDonations = donationData.map((donation) => ({
 				campaignId: donation.campaignId,
@@ -255,7 +256,6 @@ const MyDonation = () => {
 					</div>
 				)}
 			</motion.div>
-
 			<div className="pb-24 max-w-4xl mx-auto">
 				<DonorWithdrawalVotes />
 			</div>

@@ -50,6 +50,8 @@ const Blog = () => {
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 
+	console.log(error, loading);
+
 	const [formData, setFormData] = useState({
 		title: "",
 		content: "",
@@ -106,7 +108,11 @@ const Blog = () => {
 		e.preventDefault();
 
 		if (!authToken || !userAddress) {
-			toast.error(`Please Please connect your wallet and sign in first`);
+			toast.error(
+				<h1 className="text-center font-serif">
+					Please Please connect your wallet and sign in first
+				</h1>
+			);
 			setError("Please connect your wallet and sign in first");
 			return;
 		}

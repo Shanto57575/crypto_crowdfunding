@@ -20,7 +20,9 @@ const UpdateModal = ({ isOpen, onClose, campaignId, post }) => {
 
 			if (existingPost.images && existingPost.images.length > 0) {
 				setImages(
-					existingPost.images.map((img) => `http://localhost:3000${img}`)
+					existingPost.images.map(
+						(img) => `https://crypto-crowdfunding-3go8.onrender.com${img}`
+					)
 				);
 				setExistingImages(existingPost.images); // Track server-side images
 			} else {
@@ -162,8 +164,8 @@ const UpdateModal = ({ isOpen, onClose, campaignId, post }) => {
 
 			const isUpdate = post && post.length > 0;
 			const apiEndpoint = isUpdate
-				? `http://localhost:3000/api/post/${post[0]._id}`
-				: "http://localhost:3000/api/post/add-post";
+				? `https://crypto-crowdfunding-3go8.onrender.com/api/post/${post[0]._id}`
+				: "https://crypto-crowdfunding-3go8.onrender.com/api/post/add-post";
 			const method = isUpdate ? "PUT" : "POST";
 
 			const response = await fetch(apiEndpoint, {

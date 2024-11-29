@@ -50,7 +50,7 @@ const WithdrawalRequestModal = ({
 		// Check decimal places
 		const decimalPlaces = value.toString().split(".")[1]?.length || 0;
 		if (decimalPlaces > 18) {
-			toast.warning("Maximum 18 decimal places allowed");
+			toast("Maximum 18 decimal places allowed");
 			return;
 		}
 
@@ -122,7 +122,11 @@ const WithdrawalRequestModal = ({
 			);
 
 			await tx.wait();
-			toast.success("Withdrawal request submitted successfully");
+			toast.success(
+				<h1 className="text-center font-serif">
+					Withdrawal request submitted successfully
+				</h1>
+			);
 			onClose();
 			onWithDrawSuccess();
 			resetForm();
@@ -130,7 +134,7 @@ const WithdrawalRequestModal = ({
 			console.error("Withdrawal request failed:", err);
 			const errorMessage = err.message || "Failed to submit withdrawal request";
 			setError(errorMessage);
-			toast.error(<h1 className="font-serif">{errorMessage}</h1>);
+			toast.error(<h1 className="font-serif text-center">{errorMessage}</h1>);
 		} finally {
 			setLoading(false);
 		}

@@ -27,9 +27,12 @@ const ViewDetails = () => {
 	const { id: campaignId } = useParams();
 
 	const getAllPosts = async () => {
-		const response = await fetch("http://localhost:3000/api/post/all-posts", {
-			method: "GET",
-		});
+		const response = await fetch(
+			"https://crypto-crowdfunding-3go8.onrender.com/api/post/all-posts",
+			{
+				method: "GET",
+			}
+		);
 		console.log(response);
 
 		const responseData = await response.json();
@@ -318,7 +321,7 @@ const ViewDetails = () => {
 															{post.images.map((image, idx) => (
 																<div key={idx + 1}>
 																	<img
-																		src={`http://localhost:3000${image}`}
+																		src={`https://crypto-crowdfunding-3go8.onrender.com${image}`}
 																		alt={`Post image ${idx + 1}`}
 																		className="w-full h-36 rounded-lg"
 																	/>

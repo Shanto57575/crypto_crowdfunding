@@ -88,11 +88,13 @@ const UpdateCampaign = ({ campaign, isOpen, onClose, onUpdateSuccess }) => {
 
 			if (isUserRejected) {
 				toast.error(
-					<h1 className="font-serif">Transaction was cancelled by user</h1>
+					<h1 className="font-serif text-center">
+						Transaction was cancelled by user
+					</h1>
 				);
 			} else {
 				const errorMessage = err.message || "Failed to update campaign";
-				toast.error(<h1 className="font-serif">{errorMessage}</h1>);
+				toast.error(<h1 className="font-serif text-center">{errorMessage}</h1>);
 			}
 
 			onClose();

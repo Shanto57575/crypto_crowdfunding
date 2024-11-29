@@ -33,9 +33,12 @@ const MyCampaignCard = ({
 	const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
 
 	const getAllPosts = async () => {
-		const response = await fetch("http://localhost:3000/api/post/all-posts", {
-			method: "GET",
-		});
+		const response = await fetch(
+			"https://crypto-crowdfunding-3go8.onrender.com/api/post/all-posts",
+			{
+				method: "GET",
+			}
+		);
 		console.log(response);
 
 		const responseData = await response.json();
@@ -53,7 +56,7 @@ const MyCampaignCard = ({
 	};
 
 	const handleWithdraw = async (campaign, campaignId) => {
-		console.log('campaign', campaign);
+		console.log("campaign", campaign);
 		try {
 			setLoadingStates((prev) => ({
 				...prev,
@@ -62,7 +65,7 @@ const MyCampaignCard = ({
 
 			const contract = await getContract();
 			const status = await contract?.checkWithdrawalStatus(campaignId);
-			console.log('status', status);
+			console.log("status", status);
 
 			const {
 				isActive,
@@ -73,8 +76,8 @@ const MyCampaignCard = ({
 				allVoted,
 				canClaim,
 			} = status;
-			console.log('canclaim', canClaim);
-			console.log('totalVotes', totalVotes);
+			console.log("canclaim", canClaim);
+			console.log("totalVotes", totalVotes);
 
 			if (isActive) {
 				if (allVoted) {
@@ -291,7 +294,7 @@ const MyCampaignCard = ({
 									whileTap={{ scale: 0.98 }}
 									onClick={() => {
 										if (!loadingStates.withdraw[campaign.id]) {
-											handleWithdraw(campaign, campaign.id)
+											handleWithdraw(campaign, campaign.id);
 										}
 									}}
 									className={`flex-1 flex items-center flex-wrap justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
