@@ -116,7 +116,7 @@ const Navbar = () => {
 						{/* Dashboard Dropdown */}
 						{userAddress && (
 							<div className="relative" ref={dashboardRef}>
-								<button
+								{/* <button
 									onClick={() => setIsDashboardOpen(!isDashboardOpen)}
 									className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 ${
 										isDashboardOpen ||
@@ -134,7 +134,8 @@ const Navbar = () => {
 											isDashboardOpen ? "rotate-180" : ""
 										}`}
 									/>
-								</button>
+								</button> */}
+								<Link to={'/dashboard/dashboardHome'} className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 text-gray-400 hover:bg-gray-800/50 hover:text-white">Dashboard</Link>
 
 								{/* Dashboard Menu */}
 								{isDashboardOpen && (
@@ -248,7 +249,7 @@ const Navbar = () => {
 								))}
 
 								{/* Dashboard Section */}
-								{userAddress && (
+								{/* {userAddress && (
 									<>
 										<div className="mt-6 mb-3 px-4">
 											<h2 className="text-sm font-semibold text-gray-400">
@@ -271,7 +272,7 @@ const Navbar = () => {
 											</Link>
 										))}
 									</>
-								)}
+								)} */}
 							</div>
 						</div>
 					</div>
