@@ -255,7 +255,6 @@ const MyDonation = () => {
 					</div>
 				)}
 			</motion.div>
-
 			<div className="pb-24 max-w-4xl mx-auto">
 				<DonorWithdrawalVotes />
 			</div>
