@@ -10,6 +10,8 @@ import Tutorial from "../Components/Tutorial";
 import Blog from "../Components/Blog";
 import { CampaignList } from "../Components/CampaignList/CampaignList";
 import MyCampaign from "../Components/MyCampaign/MyCampaign";
+import DashboardHome from "../Components/Dashboard/DashboardHome";
+import Dashboard from "../Layout/Dashboard";
 
 export const router = createBrowserRouter([
 	{
@@ -33,31 +35,43 @@ export const router = createBrowserRouter([
 				element: <PrivateRoutes />,
 				children: [
 					{
-						path: "/all-campaigns",
-						element: <CampaignList />,
-					},
-					{
-						path: "/create-campaign",
-						element: <CreateCampaign />,
-					},
-					{
-						path: "/my-campaigns",
-						element: <MyCampaign />,
-					},
-					{
-						path: "/my-donations",
-						element: <MyDonation />,
-					},
-					{
-						path: "/my-donation",
-						element: <MyDonation />,
-					},
-					{
 						path: "/all-campaigns/view-details/:id",
 						element: <ViewDetails />,
 					},
-				],
-			},
+					{
+						path: "/all-campaigns",
+						element: <CampaignList />,
+					},
+				]
+			}
 		],
+	},
+	{
+		element: <PrivateRoutes />,
+		children: [
+			{
+				path: "/dashboard",
+				element: <Dashboard />,
+				errorElement: <ErrorPage />,
+				children: [
+					{
+						path: "/dashboard/dashboardHome",
+						element: <DashboardHome />,
+					},
+					{
+						path: "/dashboard/create-campaign",
+						element: <CreateCampaign />,
+					},
+					{
+						path: "/dashboard/my-campaigns",
+						element: <MyCampaign />,
+					},
+					{
+						path: "/dashboard/my-donations",
+						element: <MyDonation />,
+					},
+				],
+			}
+		]
 	},
 ]);
