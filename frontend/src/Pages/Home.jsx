@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 import {
 	Wallet,
@@ -24,6 +25,8 @@ import {
 	ArrowBigUp,
 	CheckCircle,
 	Send,
+	Orbit,
+	Zap,
 } from "lucide-react";
 import ChainChat from "../Components/ChainChat";
 
@@ -80,7 +83,7 @@ const resources = [
 
 const faqs = [
 	{
-		question: "How does blockchain crowdfunding work?",
+		question: "How does FundChain work?",
 		answer:
 			"Blockchain crowdfunding uses smart contracts to securely collect and distribute funds. When you back a project, your funds are held in escrow until project milestones are met.",
 	},
@@ -105,7 +108,7 @@ const faqs = [
 			"Yes, a blockchain wallet like MetaMask is required to send and receive funds securely.",
 	},
 	{
-		question: "Can I withdraw funds before reaching my goal?",
+		question: "Can I withdraw funds early?",
 		answer:
 			"Funds can only be accessed once the goal is met, ensuring accountability to backers",
 	},
@@ -203,14 +206,37 @@ const Home = () => {
 						<h1 className="text-5xl md:text-7xl xl:text-8xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-orange-500 drop-shadow-2xl">
 							Fund the Future
 						</h1>
-						<p className="text-2xl mb-6 text-gray-100 font-light">
-							Where Visionaries Meet Investors in the Web3 Space
-						</p>
-						<p className="md:text-lg mb-8 text-gray-300 max-w-2xl mx-auto">
+						<div className="flex items-center justify-center gap-4 mb-6">
+							<motion.div
+								initial={{ rotate: -180, opacity: 0 }}
+								animate={{ rotate: 0, opacity: 1 }}
+								transition={{ delay: 1, duration: 0.5 }}
+							>
+								<Orbit className="text-purple-300 w-8 h-8" />
+							</motion.div>
+							<p className="text-2xl text-gray-100 font-light">
+								Where Visionaries Meet Investors in the Web3 Space
+							</p>
+							<motion.div
+								initial={{ rotate: 180, opacity: 0 }}
+								animate={{ rotate: 0, opacity: 1 }}
+								transition={{ delay: 1, duration: 0.5 }}
+							>
+								<Zap className="text-pink-300 w-8 h-8" />
+							</motion.div>
+						</div>
+
+						{/* Description */}
+						<motion.p
+							className="md:text-lg mb-8 text-gray-300 max-w-2xl mx-auto"
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 1.2, duration: 0.7 }}
+						>
 							Join the revolution in decentralized crowdfunding. Back innovative
 							projects, support creators, and earn rewards through blockchain
 							technology.
-						</p>
+						</motion.p>
 						<div className="flex flex-col md:flex-row items-center justify-center gap-6 pb-4">
 							<Link
 								to="/all-campaigns"
@@ -477,7 +503,7 @@ const Home = () => {
 					<h2 className="text-4xl font-bold text-center mb-16">
 						Frequently Asked Questions
 					</h2>
-					<div className="max-w-3xl mx-auto">
+					<div className="max-w-4xl grid grid-cols-1 md:grid-cols-2 mx-auto gap-x-6 gap-y-3">
 						{faqs.map((faq, index) => (
 							<div key={index} className="mb-4">
 								<button
