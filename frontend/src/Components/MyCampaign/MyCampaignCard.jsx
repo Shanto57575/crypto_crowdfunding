@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { parseEther } from "ethers";
+import { motion } from "framer-motion";
 import { handleDelete, handleClaimFunds } from "./utils/campaignActions";
 import {
 	Target,
@@ -11,7 +13,9 @@ import {
 	Award,
 	ChevronRight,
 	Loader2,
+	MessageCircle,
 } from "lucide-react";
+import UpdateModal from "./utils/UpdateModal";
 
 const MyCampaignCard = ({
 	campaign,
@@ -21,8 +25,30 @@ const MyCampaignCard = ({
 	onWithdraw,
 	onUpdateSuccess,
 }) => {
+	const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+	const [post, setAllPost] = useState([]);
+
+	const getAllPosts = async () => {
+		const response = await fetch("http://localhost:3000/api/post/all-posts", {
+			method: "GET",
+		});
+		console.log(response);
+
+		const responseData = await response.json();
+		setAllPost(responseData.filter((data) => data.campaignId === campaign.id));
+		console.log("responseData", responseData);
+	};
+
+	useEffect(() => {
+		getAllPosts();
+	}, []);
+
 	return (
-		<div className="group relative bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-indigo-900 transition-all duration-300">
+		<motion.div
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			className="group relative bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-900 transition-all duration-300"
+		>
 			<div className="aspect-video relative">
 				<img
 					src={campaign.metadataHash.image}
@@ -34,7 +60,7 @@ const MyCampaignCard = ({
 					<span
 						className={`px-3 py-1 rounded-full text-xs font-medium ${
 							campaign.status == 0
-								? "bg-green-100 text-emerald-600 ring-1 ring-green-400"
+								? "bg-purple-100 text-purple-600 ring-1 ring-purple-400"
 								: "bg-red-100 text-rose-600 ring-1 ring-red-400"
 						}`}
 					>
@@ -66,9 +92,9 @@ const MyCampaignCard = ({
 							</span>
 						</div>
 						<div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-							<div
-								className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 transition-all duration-300"
-								style={{
+							<motion.div
+								initial={{ width: 0 }}
+								animate={{
 									width: `${Math.min(
 										(Number(campaign.amountCollected) /
 											Number(campaign.target)) *
@@ -76,6 +102,8 @@ const MyCampaignCard = ({
 										100
 									)}%`,
 								}}
+								transition={{ duration: 1, ease: "easeOut" }}
+								className="h-full bg-gradient-to-r from-purple-500 to-purple-600"
 							/>
 						</div>
 					</div>
@@ -115,14 +143,23 @@ const MyCampaignCard = ({
 					</div>
 
 					{campaign.status == 0 && (
-						<div className="grid grid-cols-2 gap-3">
+						<div className="flex gap-3">
 							{!campaign.claimed &&
 								parseEther(campaign.amountCollected) <
 									parseEther(campaign.target) && (
-									<button
-										onClick={() => onUpdate(campaign)}
-										disabled={loadingStates.update[campaign.id]}
-										className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all"
+									<motion.button
+										whileHover={{ scale: 1.02 }}
+										whileTap={{ scale: 0.98 }}
+										onClick={() => {
+											if (!loadingStates.update[campaign.id]) {
+												onUpdate(campaign);
+											}
+										}}
+										className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
+											loadingStates.update[campaign.id]
+												? "bg-gray-700 cursor-not-allowed"
+												: "bg-gray-800 hover:bg-gray-700 cursor-pointer"
+										} text-white`}
 									>
 										{loadingStates.update[campaign.id] ? (
 											<Loader2 className="w-4 h-4 animate-spin" />
@@ -131,14 +168,38 @@ const MyCampaignCard = ({
 												<Edit3 className="w-4 h-4" /> Update
 											</>
 										)}
-									</button>
+									</motion.button>
 								)}
-							<button
-								onClick={() =>
-									handleDelete(campaign.id, setLoadingStates, onUpdateSuccess)
-								}
-								disabled={loadingStates.delete[campaign.id]}
-								className="w-full text-center hover:border-transparent hover:bg-rose-600 flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg transition-all"
+
+							<motion.button
+								whileHover={{ scale: 1.02 }}
+								whileTap={{ scale: 0.98 }}
+								onClick={() => {
+									setIsUpdateModalOpen(true);
+								}}
+								className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white transition-all"
+							>
+								<MessageCircle className="w-4 h-4" />
+								{post.length > 0 ? "Give recents Updates" : "Give Updates"}
+							</motion.button>
+
+							<motion.button
+								whileHover={{ scale: 1.02 }}
+								whileTap={{ scale: 0.98 }}
+								onClick={() => {
+									if (!loadingStates.delete[campaign.id]) {
+										handleDelete(
+											campaign.id,
+											setLoadingStates,
+											onUpdateSuccess
+										);
+									}
+								}}
+								className={`flex-1 text-center flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
+									loadingStates.delete[campaign.id]
+										? "bg-gray-700 cursor-not-allowed"
+										: "bg-gray-800 hover:bg-gray-700 cursor-pointer"
+								} text-white`}
 							>
 								{loadingStates.delete[campaign.id] ? (
 									<Loader2 className="w-4 h-4 animate-spin" />
@@ -147,46 +208,65 @@ const MyCampaignCard = ({
 										<Trash2 className="w-4 h-4" /> Close
 									</>
 								)}
-							</button>
-							{campaign.canClaimed > 0 && campaign.claimed == false ? (
-								<button
-									onClick={() => onWithdraw(campaign)}
-									disabled={loadingStates.withdraw[campaign.id]}
-									className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all"
+							</motion.button>
+
+							{campaign.canClaimed > 0 && campaign.claimed == false && (
+								<motion.button
+									whileHover={{ scale: 1.02 }}
+									whileTap={{ scale: 0.98 }}
+									onClick={() => {
+										if (!loadingStates.withdraw[campaign.id]) {
+											onWithdraw(campaign);
+										}
+									}}
+									className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
+										loadingStates.withdraw[campaign.id]
+											? "bg-gray-700 cursor-not-allowed"
+											: "bg-gray-800 hover:bg-gray-700 cursor-pointer"
+									} text-white`}
 								>
 									{loadingStates.withdraw[campaign.id] ? (
 										<Loader2 className="w-4 h-4 animate-spin" />
 									) : (
 										"Withdraw"
 									)}
-								</button>
-							) : (
-								<></>
+								</motion.button>
 							)}
 						</div>
 					)}
 
 					{campaign.claimed && (
-						<div className="flex items-center justify-center gap-2 bg-green-500/10 text-green-400 py-3 px-4 rounded-lg ring-1 ring-green-500/30">
+						<motion.div
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							className="flex items-center justify-center gap-2 bg-green-500/10 text-green-400 py-3 px-4 rounded-lg ring-1 ring-green-500/30"
+						>
 							<Award className="w-5 h-5" />
 							<span className="font-medium">Funds Claimed</span>
-						</div>
+						</motion.div>
 					)}
 
 					<div className="grid grid-cols-1 gap-3">
 						{parseEther(campaign.amountCollected) >=
 							parseEther(campaign.target) &&
 							!campaign.claimed && (
-								<button
-									onClick={() =>
-										handleClaimFunds(
-											campaign.id,
-											setLoadingStates,
-											onUpdateSuccess
-										)
-									}
-									disabled={loadingStates.claim[campaign.id]}
-									className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+								<motion.button
+									whileHover={{ scale: 1.02 }}
+									whileTap={{ scale: 0.98 }}
+									onClick={() => {
+										if (!loadingStates.claim[campaign.id]) {
+											handleClaimFunds(
+												campaign.id,
+												setLoadingStates,
+												onUpdateSuccess
+											);
+										}
+									}}
+									className={`w-full py-3 rounded-lg transition-all flex items-center justify-center gap-2 ${
+										loadingStates.claim[campaign.id]
+											? "bg-gray-700 cursor-not-allowed"
+											: "bg-purple-600 hover:bg-purple-700 cursor-pointer"
+									} text-white`}
 								>
 									{loadingStates.claim[campaign.id] ? (
 										<Loader2 className="w-4 h-4 animate-spin" />
@@ -195,20 +275,31 @@ const MyCampaignCard = ({
 											<Wallet2 className="w-4 h-4" /> Claim Funds
 										</>
 									)}
-								</button>
+								</motion.button>
 							)}
 						<Link
 							to={`/all-campaigns/view-details/${campaign.id}`}
 							className="w-full"
 						>
-							<button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg transition-all flex items-center justify-center gap-2">
+							<motion.button
+								whileHover={{ scale: 1.02 }}
+								whileTap={{ scale: 0.98 }}
+								className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+							>
 								View Details <ChevronRight className="w-4 h-4" />
-							</button>
+							</motion.button>
 						</Link>
 					</div>
 				</div>
 			</div>
-		</div>
+
+			<UpdateModal
+				isOpen={isUpdateModalOpen}
+				onClose={() => setIsUpdateModalOpen(false)}
+				campaignId={campaign.id}
+				post={post}
+			/>
+		</motion.div>
 	);
 };
 

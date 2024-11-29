@@ -1,15 +1,22 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import verifyToken from './middlewares/auth.middleware.js';
 import connectDB from './db/dbConnection.js';
 import authRouter from './routes/auth.routes.js';
 import aiRouter from './routes/ai.routes.js';
 import blogRouter from './routes/blog.routes.js';
+import postRouter from './routes/post.routes.js';
 
 dotenv.config();
 
 const app = express();
+
+// Define __dirname in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Connect to database
 connectDB();
@@ -28,14 +35,17 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use('/api/auth', authRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/blog', blogRouter);
+app.use('/api/post', postRouter);
 
 app.get('/', async (req, res) => {
-    res.json({ message: " //\\ FUNDCHAIN'S API IS RUNNING FINE //\\ 👌" })
-})
+    res.json({ message: " //\\ FUNDCHAIN'S API IS RUNNING FINE //\\ 👌" });
+});
+
 app.get('/api/protected', verifyToken, async (req, res) => {
     res.json({ message: 'Access granted to protected route', user: req.user });
 });

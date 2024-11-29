@@ -47,6 +47,7 @@ export function CampaignCard({ campaign }) {
 					const conversionRate = parseFloat(data.data.amount);
 					ethAmount = donationAmount * conversionRate;
 
+					// Currency-specific minimum donation checks
 					if (donationCurrency === "BDT" && donationAmount < 10) {
 						toast.error(
 							<div className="text-center font-serif">
@@ -137,9 +138,57 @@ export function CampaignCard({ campaign }) {
 				);
 				setDonationAmount("");
 			} catch (contractErr) {
-				console.error("Contract donation error:", contractErr);
+				const error = serializeError(contractErr);
+				console.error("Contract donation error:", error);
 
-				if (contractErr.code === "NUMERIC_FAULT") {
+				// Comprehensive error handling using message.includes()
+				const errorMessage = error.message.toLowerCase();
+
+				if (errorMessage.includes("owner cannot donate")) {
+					toast.error(
+						<div className="text-center font-serif">
+							<h1 className="font-bold">Donation Restricted</h1>
+							<p>
+								Campaign owners are not allowed to donate to their own campaign
+							</p>
+						</div>
+					);
+				} else if (errorMessage.includes("campaign has ended")) {
+					toast.error(
+						<div className="text-center font-serif">
+							<h1 className="font-bold">Campaign Closed</h1>
+							<p>
+								This campaign has already ended and is no longer accepting
+								donations
+							</p>
+						</div>
+					);
+				} else if (errorMessage.includes("user denied transaction")) {
+					toast.error(
+						<p className="text-center font-serif">Transaction Cancelled</p>
+					);
+				} else if (errorMessage.includes("insufficient funds")) {
+					const requiredAmount = errorMessage.match(/want (\d+)/);
+					const currentBalance = errorMessage.match(/have (\d+)/);
+
+					toast.error(
+						<div className="text-center font-serif">
+							<h1 className="font-bold">Insufficient Funds</h1>
+							<p>
+								Your wallet does not have enough ETH to complete this
+								transaction.
+							</p>
+							{currentBalance && requiredAmount && (
+								<p>
+									Current Balance: {ethers.formatEther(currentBalance[1])} ETH
+									<br />
+									Required Amount: {ethers.formatEther(requiredAmount[1])} ETH
+								</p>
+							)}
+							<p>Please add funds to your wallet and try again.</p>
+						</div>
+					);
+				} else if (error.code === "NUMERIC_FAULT") {
 					toast.error(
 						<div>
 							<h1 className="font-bold">Invalid Donation Amount</h1>
@@ -148,42 +197,27 @@ export function CampaignCard({ campaign }) {
 						</div>
 					);
 				} else {
-					throw contractErr;
+					// Fallback for any unhandled errors
+					toast.error(
+						<div className="text-center font-serif">
+							<h1 className="font-bold">Donation Error</h1>
+							<p>{error.message || "Failed to process donation"}</p>
+						</div>
+					);
 				}
 			}
 		} catch (err) {
-			// Previous error handling remains the same
-			if (err.code === 4001 || err.action === "sendTransaction") {
-				toast.error(
-					<p className="text-center font-serif">Transaction Cancelled</p>
-				);
-			} else if (
-				err.code === -32000 ||
-				err.message.includes("insufficient funds")
-			) {
-				const requiredAmount = err.message.match(/want (\d+)/);
-				const currentBalance = err.message.match(/have (\d+)/);
+			const error = serializeError(err);
+			console.error("Unexpected donation error:", error);
 
-				toast.error(
-					<div className="text-center font-serif">
-						<h1 className="font-bold">Insufficient Funds</h1>
-						<p>
-							Your wallet does not have enough ETH to complete this transaction.
-						</p>
-						{currentBalance && requiredAmount && (
-							<p>
-								Current Balance: {ethers.formatEther(currentBalance[1])} ETH
-								<br />
-								Required Amount: {ethers.formatEther(requiredAmount[1])} ETH
-							</p>
-						)}
-						<p>Please add funds to your wallet and try again.</p>
-					</div>
-				);
-			} else {
-				console.error("Error donating:", err);
-				toast.error(err.message || "Failed to process donation");
-			}
+			toast.error(
+				<div className="text-center font-serif">
+					<h1 className="font-bold">Unexpected Error</h1>
+					<p>
+						{error.message || "An unexpected error occurred during donation"}
+					</p>
+				</div>
+			);
 		} finally {
 			setIsLoading(false);
 		}
@@ -206,24 +240,48 @@ export function CampaignCard({ campaign }) {
 			);
 		} catch (err) {
 			const error = serializeError(err);
-			const message =
-				error.data?.message ||
-				error.message ||
-				"An error occurred while claiming funds";
+			console.error("Claim funds error:", error);
 
-			toast.error(
-				<h1 className="text-center font-serif">
-					{message.includes("Only owner can claim funds")
-						? "Only the campaign owner can claim funds"
-						: message.includes("Campaign is not active")
-						? "This campaign is not active"
-						: message.includes("Campaign has not ended yet")
-						? "Campaign has not ended yet"
-						: message.includes("Funds already claimed")
-						? "Funds have already been claimed"
-						: message}
-				</h1>
-			);
+			// Comprehensive error handling for fund claiming
+			const errorMessage = error.message.toLowerCase();
+
+			if (errorMessage.includes("only owner can claim funds")) {
+				toast.error(
+					<h1 className="text-center font-serif">
+						Only the campaign owner can claim funds
+					</h1>
+				);
+			} else if (errorMessage.includes("campaign is not active")) {
+				toast.error(
+					<h1 className="text-center font-serif">
+						This campaign is not active
+					</h1>
+				);
+			} else if (errorMessage.includes("campaign has not ended yet")) {
+				toast.error(
+					<h1 className="text-center font-serif">Campaign has not ended yet</h1>
+				);
+			} else if (errorMessage.includes("funds already claimed")) {
+				toast.error(
+					<h1 className="text-center font-serif">
+						Funds have already been claimed
+					</h1>
+				);
+			} else if (errorMessage.includes("no funds left to claim")) {
+				toast.error(
+					<h1 className="text-center font-serif">No funds left to claim</h1>
+				);
+			} else if (errorMessage.includes("user denied transaction")) {
+				toast.error(
+					<h1 className="text-center font-serif">Transaction Cancelled</h1>
+				);
+			} else {
+				toast.error(
+					<h1 className="text-center font-serif">
+						{error.message || "An error occurred while claiming funds"}
+					</h1>
+				);
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -378,7 +436,7 @@ export function CampaignCard({ campaign }) {
 
 					{/* Campaign Claimed Section */}
 					{campaign.claimed && (
-						<div className="bg-green-900/20 border border-green-500/30 rounded-xl p-4 flex items-center space-x-3">
+						<div className="text-center bg-green-900/20 border border-green-500/30 rounded-xl p-4 flex items-center space-x-3">
 							<CheckCircle2 className="w-5 h-5 text-green-400" />
 							<p className="text-green-400">Campaign Funds Claimed</p>
 						</div>
@@ -398,34 +456,45 @@ export function CampaignCard({ campaign }) {
 						</Link>
 
 						{new Date() >= campaign.deadline && !campaign.claimed && (
-							<div className="space-y-4">
-								<div className="bg-gray-800 rounded-xl p-4 flex items-center space-x-3">
-									<Clock className="w-5 h-5 text-gray-400" />
-									<p className="text-gray-300">
-										Campaign Ended, Awaiting Claim
-									</p>
-								</div>
-								<motion.button
-									whileHover={{ scale: 1.05 }}
-									whileTap={{ scale: 0.95 }}
-									onClick={handleClaimFunds}
-									disabled={isLoading}
-									className="w-full px-4 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 
-                                        text-white rounded-xl disabled:opacity-50 flex items-center justify-center space-x-2"
-								>
-									{isLoading ? (
-										<>
-											<RefreshCw className="w-4 h-4 animate-spin" />
-											<span>Claiming...</span>
-										</>
-									) : (
-										<>
-											<Wallet className="w-4 h-4" />
-											<span>Claim Funds</span>
-										</>
-									)}
-								</motion.button>
-							</div>
+							<>
+								{Number(campaign.amountCollected) > 0 ? (
+									<div className="space-y-4">
+										<div className="bg-gray-800 rounded-xl p-4 flex items-center space-x-3">
+											<Clock className="w-5 h-5 text-gray-400" />
+											<p className="text-gray-300">
+												Campaign Ended, Awaiting Claim
+											</p>
+										</div>
+										<motion.button
+											whileHover={{ scale: 1.05 }}
+											whileTap={{ scale: 0.95 }}
+											onClick={handleClaimFunds}
+											disabled={isLoading}
+											className="w-full px-4 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 
+												text-white rounded-xl disabled:opacity-50 flex items-center justify-center space-x-2"
+										>
+											{isLoading ? (
+												<>
+													<RefreshCw className="w-4 h-4 animate-spin" />
+													<span>Claiming...</span>
+												</>
+											) : (
+												<>
+													<Wallet className="w-4 h-4" />
+													<span>Claim Funds</span>
+												</>
+											)}
+										</motion.button>
+									</div>
+								) : (
+									<div className="bg-gray-800 rounded-xl p-4 flex items-center space-x-3">
+										<Clock className="w-5 h-5 text-gray-400" />
+										<p className="text-gray-300">
+											Campaign Ended, No Funds to Claim
+										</p>
+									</div>
+								)}
+							</>
 						)}
 					</div>
 				</div>
