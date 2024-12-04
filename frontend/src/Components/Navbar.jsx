@@ -11,7 +11,6 @@ import {
 	Users,
 	Compass,
 	LayoutDashboard,
-	ChevronDown,
 	Settings,
 	History,
 	TrendingUp,
@@ -135,7 +134,12 @@ const Navbar = () => {
 										}`}
 									/>
 								</button> */}
-								<Link to={'/dashboard/dashboardHome'} className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 text-gray-400 hover:bg-gray-800/50 hover:text-white">Dashboard</Link>
+								<Link
+									to={"/dashboard/dashboardHome"}
+									className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 text-gray-400 hover:bg-gray-800/50 hover:text-white"
+								>
+									Dashboard
+								</Link>
 
 								{/* Dashboard Menu */}
 								{isDashboardOpen && (

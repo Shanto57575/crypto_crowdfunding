@@ -222,9 +222,10 @@ const CreateCampaign = () => {
 				if (receipt.status === 0) {
 					throw rpcErrors.internal("Transaction failed");
 				}
-
 				toast.success(
-					<h1 className="font-serif">Campaign created successfully!</h1>
+					<h1 className="text-center font-serif">
+						Campaign created successfully!
+					</h1>
 				);
 				resetForm();
 			} catch (txError) {

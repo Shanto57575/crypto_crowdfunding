@@ -1,6 +1,6 @@
 import HashLoader from "react-spinners/HashLoader";
 
-function Loader({ sz }) {
+function Loader() {
 	return (
 		<div className="sweet-loading h-screen flex justify-center items-center">
 			<HashLoader
