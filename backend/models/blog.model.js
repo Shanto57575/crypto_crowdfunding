@@ -26,8 +26,8 @@ const blogSchema = new mongoose.Schema(
       required: true,
     },
     userAddress: {
-      type: mongoose.Schema.Types.ObjectId, // This sets the field to reference another document
-      ref: 'User', // The name of the referenced model
+      type: String, // This sets the field to reference another document
+      // ref: 'User',
       required: [true, 'User address is required'],
     },
   },
