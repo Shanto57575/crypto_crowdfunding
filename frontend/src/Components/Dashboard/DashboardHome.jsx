@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useWallet } from "../../context/WalletContext";
 import { getContract } from "../../helper/contract";
 import { fetchCampaigns } from "../MyCampaign/utils/campaignUtils";
@@ -7,8 +6,8 @@ import { fetchCampaigns } from "../MyCampaign/utils/campaignUtils";
 const DashboardHome = () => {
   const { userAddress } = useWallet();
 	// const [campaigns, setCampaigns] = useState([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState(null);
+	// const [isLoading, setIsLoading] = useState(true);
+	// const [error, setError] = useState(null);
   
   const campaigns = [
     { id: 1, name: "Tech Innovators Fund", raised: 12500, goal: 20000 },
@@ -23,29 +22,29 @@ const DashboardHome = () => {
     { id: 4, name: "Emma T.", amount: 50, campaign: "Tech Innovators Fund" },
   ];
 
-  const getMyCampaigns = async () => {
-		try {
-			setIsLoading(true);
-			setError(null);
-			const contract = await getContract();
-			const fetchedCampaigns = await fetchCampaigns(contract, userAddress);
-			setCampaigns(fetchedCampaigns);
-		} catch (err) {
-			setError(err.message);
-			console.error("Error fetching campaigns:", err);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+  // const getMyCampaigns = async () => {
+	// 	try {
+	// 		setIsLoading(true);
+	// 		setError(null);
+	// 		const contract = await getContract();
+	// 		const fetchedCampaigns = await fetchCampaigns(contract, userAddress);
+	// 		setCampaigns(fetchedCampaigns);
+	// 	} catch (err) {
+	// 		setError(err.message);
+	// 		console.error("Error fetching campaigns:", err);
+	// 	} finally {
+	// 		setIsLoading(false);
+	// 	}
+	// };
 
-	useEffect(() => {
-		if (userAddress) {
-			getMyCampaigns();
-		}
-	}, [userAddress]);
+	// useEffect(() => {
+	// 	if (userAddress) {
+	// 		getMyCampaigns();
+	// 	}
+	// }, [userAddress]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
+    <div className="h-screen w-full mr-6 text-white p-6">
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
       </header>

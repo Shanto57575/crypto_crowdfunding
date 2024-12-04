@@ -1,45 +1,71 @@
 import Blog from '../models/blog.model.js';
+import mongoose from 'mongoose';
+import blogUpload from '../utils/multerConfig.js';
 
 // Create a new blog
-const addBlog = async (req, res) => {
+export const addBlog = async (req, res) => {
+    console.log("=== START: addBlog function ===");
+    
     try {
-        const { title, content, author, tags } = req.body;
+        // Use blog-specific multer upload middleware for single image
+        blogUpload.single('image')(req, res, async function(err) {
+            if (err) {
+                console.error("Multer error:", err);
+                return res.status(400).json({
+                    error: err.message || 'Error uploading file'
+                });
+            }
 
-        if (!title || !content || !author || !tags) {
-            return res.status(400).json({
-                error: 'Title, content, author, and tags are required fields.',
+            console.log("File received:", req.file);
+            console.log("Body received:", req.body);
+
+            const { title, content, author, tags, userAddress } = req.body;
+
+            // Validate required fields
+            if (!title || !content || !author || !tags || !userAddress || !req.file) {
+                console.log("Missing required fields");
+                return res.status(400).json({
+                    error: 'All fields including image are required'
+                });
+            }
+
+            // Process tags
+            let tagArray = typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : tags;
+
+            // Create image path
+            const imagePath = `/uploads/blogs/${req.file.filename}`;
+            console.log("Image path:", imagePath);
+
+            // Create blog post
+            const blog = await Blog.create({
+                title,
+                content,
+                author,
+                tags: tagArray,
+                image: imagePath,
+                userAddress
             });
-        }
 
-        let tagArray = tags;
-        if (typeof tags === 'string') {
-            tagArray = tags.split(',').map(tag => tag.trim());
-        }
+            console.log("Blog created successfully:", blog);
+            console.log("=== END: addBlog function (Success) ===");
 
-        if (!Array.isArray(tagArray) || tagArray.length === 0) {
-            return res.status(400).json({
-                error: 'Tags should be a non-empty array or comma-separated string.',
+            res.status(201).json({
+                message: 'Blog created successfully',
+                data: blog
             });
-        }
-
-        const blog = await Blog.create({
-            ...req.body,
-            tags: tagArray
-        });
-
-        res.status(201).json({
-            message: 'Blog created successfully',
-            data: blog,
         });
     } catch (error) {
+        console.error("Error in addBlog:", error);
+        console.log("=== END: addBlog function (Error) ===");
         res.status(500).json({
             error: 'An error occurred while creating the blog',
-            details: error.message,
+            details: error.message
         });
     }
 };
 
-const getAllBlogs = async (req, res) => {
+// Get all blogs
+export const getAllBlogs = async (req, res) => {
     try {
         const blogs = await Blog.find();
 
@@ -62,7 +88,7 @@ const getAllBlogs = async (req, res) => {
 };
 
 // Get a single blog by ID
-const singleBlog = async (req, res) => {
+export const singleBlog = async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -94,7 +120,13 @@ const singleBlog = async (req, res) => {
 };
 
 // Update a blog by ID
-const updateBlog = async (req, res) => {
+export const updateBlog = async (req, res) => {
+    console.log("Update request - Full Details:", {
+        id: req.params.id,
+        body: req.body,
+        files: req.files
+    });
+
     try {
         const { id } = req.params;
 
@@ -105,7 +137,55 @@ const updateBlog = async (req, res) => {
             });
         }
 
-        const updatedBlog = await Blog.findByIdAndUpdate(id, req.body, {
+        // Find existing blog
+        const existingBlog = await Blog.findById(id);
+        if (!existingBlog) {
+            return res.status(404).json({ error: "Blog not found" });
+        }
+
+        // Prepare update object
+        const updateData = { ...req.body };
+
+        // Handle image updates
+        let updatedImages = existingBlog.images || []; // Existing images
+
+        // Add new images if uploaded
+        if (req.files && req.files.length > 0) {
+            const newImagePaths = req.files.map((file) => `/uploads/blogs/${file.filename}`);
+            updatedImages = [...updatedImages, ...newImagePaths];
+        }
+
+        // Handle images to remove if provided
+        if (req.body.removeImages) {
+            const imagesToRemove = Array.isArray(req.body.removeImages)
+                ? req.body.removeImages
+                : [req.body.removeImages];
+            updatedImages = updatedImages.filter((img) => !imagesToRemove.includes(img));
+        }
+
+        // Enforce the limit of 6 images (you can adjust this limit as needed)
+        if (updatedImages.length > 6) {
+            return res.status(400).json({ error: "Cannot have more than 6 images." });
+        }
+
+        // Update images in the database
+        updateData.images = updatedImages;
+
+        // Handle tags update
+        if (updateData.tags) {
+            if (typeof updateData.tags === 'string') {
+                updateData.tags = updateData.tags.split(',').map(tag => tag.trim());
+            }
+            if (!Array.isArray(updateData.tags) || updateData.tags.length === 0) {
+                return res.status(400).json({
+                    error: 'Tags should be a non-empty array or comma-separated string.',
+                });
+            }
+        }
+
+        console.log("Prepared Update Data:", updateData);
+
+        const updatedBlog = await Blog.findByIdAndUpdate(id, updateData, {
             new: true,
             runValidators: true,
         });
@@ -129,7 +209,7 @@ const updateBlog = async (req, res) => {
 };
 
 // Delete a blog by ID
-const removeBlog = async (req, res) => {
+export const removeBlog = async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -159,10 +239,3 @@ const removeBlog = async (req, res) => {
     }
 };
 
-export {
-    addBlog,
-    getAllBlogs,
-    singleBlog,
-    updateBlog,
-    removeBlog,
-};
