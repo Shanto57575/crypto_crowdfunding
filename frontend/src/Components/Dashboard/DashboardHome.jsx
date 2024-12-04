@@ -1,27 +1,58 @@
+import { useEffect, useState } from "react";
+import { useWallet } from "../../context/WalletContext";
+import { getContract } from "../../helper/contract";
+import { fetchCampaigns } from "../MyCampaign/utils/campaignUtils";
+
 const DashboardHome = () => {
+  const { userAddress } = useWallet();
+	// const [campaigns, setCampaigns] = useState([]);
+	// const [isLoading, setIsLoading] = useState(true);
+	// const [error, setError] = useState(null);
+  
+  const campaigns = [
+    { id: 1, name: "Tech Innovators Fund", raised: 12500, goal: 20000 },
+    { id: 2, name: "Green Energy Project", raised: 8700, goal: 15000 },
+    { id: 3, name: "Community Art Initiative", raised: 3200, goal: 5000 },
+  ];
 	const campaigns = [
 		{ id: 1, name: "Tech Innovators Fund", raised: 12500, goal: 20000 },
 		{ id: 2, name: "Green Energy Project", raised: 8700, goal: 15000 },
 		{ id: 3, name: "Community Art Initiative", raised: 3200, goal: 5000 },
 	];
 
-	const recentDonations = [
-		{ id: 1, name: "Anonymous", amount: 150, campaign: "Tech Innovators Fund" },
-		{ id: 2, name: "Sarah L.", amount: 75, campaign: "Green Energy Project" },
-		{
-			id: 3,
-			name: "Michael R.",
-			amount: 200,
-			campaign: "Community Art Initiative",
-		},
-		{ id: 4, name: "Emma T.", amount: 50, campaign: "Tech Innovators Fund" },
-	];
+  const recentDonations = [
+    { id: 1, name: "Anonymous", amount: 150, campaign: "Tech Innovators Fund" },
+    { id: 2, name: "Sarah L.", amount: 75, campaign: "Green Energy Project" },
+    { id: 3, name: "Michael R.", amount: 200, campaign: "Community Art Initiative" },
+    { id: 4, name: "Emma T.", amount: 50, campaign: "Tech Innovators Fund" },
+  ];
 
-	return (
-		<div className="min-h-screen bg-gray-900 text-white p-6">
-			<header className="flex justify-between items-center mb-8">
-				<h1 className="text-3xl font-bold">Dashboard</h1>
-			</header>
+  // const getMyCampaigns = async () => {
+	// 	try {
+	// 		setIsLoading(true);
+	// 		setError(null);
+	// 		const contract = await getContract();
+	// 		const fetchedCampaigns = await fetchCampaigns(contract, userAddress);
+	// 		setCampaigns(fetchedCampaigns);
+	// 	} catch (err) {
+	// 		setError(err.message);
+	// 		console.error("Error fetching campaigns:", err);
+	// 	} finally {
+	// 		setIsLoading(false);
+	// 	}
+	// };
+
+	// useEffect(() => {
+	// 	if (userAddress) {
+	// 		getMyCampaigns();
+	// 	}
+	// }, [userAddress]);
+
+  return (
+    <div className="h-screen w-full mr-6 text-white p-6">
+      <header className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+      </header>
 
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 				<div className="bg-gray-800 p-6 rounded-lg">

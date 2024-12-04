@@ -1,11 +1,11 @@
 import HashLoader from "react-spinners/HashLoader";
 
-function Loader({ sz }) {
+function Loader() {
 	return (
-		<div className="sweet-loading">
+		<div className="sweet-loading h-screen flex justify-center items-center">
 			<HashLoader
 				color={"#fff"}
-				size={sz}
+				size={200}
 				aria-label="Loading Spinner"
 				data-testid="loader"
 			/>

@@ -265,8 +265,8 @@ const CreateCampaign = () => {
 	};
 
 	return (
-		<div className="min-h-screen bg-[#111827] py-12 px-4 sm:px-6 lg:px-8 pt-32">
-			<div className="max-w-3xl mx-auto">
+		<div className="py-12 px-4 sm:px-6 lg:px-8">
+			<div className="max-w-3xl mx-auto pb-20">
 				<div className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700">
 					<div className="text-center mb-8">
 						<h2 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
