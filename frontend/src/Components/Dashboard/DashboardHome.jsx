@@ -8,12 +8,6 @@ const DashboardHome = () => {
 	// const [campaigns, setCampaigns] = useState([]);
 	// const [isLoading, setIsLoading] = useState(true);
 	// const [error, setError] = useState(null);
-  
-  const campaigns = [
-    { id: 1, name: "Tech Innovators Fund", raised: 12500, goal: 20000 },
-    { id: 2, name: "Green Energy Project", raised: 8700, goal: 15000 },
-    { id: 3, name: "Community Art Initiative", raised: 3200, goal: 5000 },
-  ];
 	const campaigns = [
 		{ id: 1, name: "Tech Innovators Fund", raised: 12500, goal: 20000 },
 		{ id: 2, name: "Green Energy Project", raised: 8700, goal: 15000 },

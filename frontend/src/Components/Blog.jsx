@@ -70,6 +70,7 @@ const Blog = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/all-blogs`);
+      console.log(response.data.data);
       setBlogs(response.data.data);
     } catch (error) {
       setError("Failed to fetch blogs");
@@ -221,14 +222,14 @@ const Blog = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {blogs.map((blog) => (
             <div
-              key={blog.id}
+              key={blog._id}
               className="group relative bg-gradient-to-br from-zinc-900 to-black rounded-3xl overflow-hidden border border-zinc-800/50 shadow-lg hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-300 hover:-translate-y-1"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
               <div className="relative aspect-video overflow-hidden">
                 <img
-                  src={blog.imageUrl}
+                  src={`http://localhost:3000/public/${blog?.image}`}
                   alt={blog.title}
                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 />
