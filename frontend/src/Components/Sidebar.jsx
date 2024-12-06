@@ -1,11 +1,19 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Home, PlusCircle, Folder, Heart, LayoutDashboard, BookOpen, HelpCircle, LogOut } from 'lucide-react';
+import { useWallet } from "../context/WalletContext";
 
 const Sidebar = () => {
   const activeStyle = {
     backgroundColor: "#4A5568",
     color: "white",
     fontWeight: "bold",
+  };
+  const { disconnect } = useWallet();
+  const navigate = useNavigate();
+
+  const disconnectWallet = async () => {
+    await disconnect();
+    navigate('/');
   };
 
   return (
@@ -100,9 +108,12 @@ const Sidebar = () => {
         </ul>
       </nav>
       <div className="p-4">
-        <button className="flex items-center space-x-3 p-2 w-full rounded-lg transition-colors duration-200 hover:bg-gray-700">
-          <LogOut size={20} />
-          <span>Logout</span>
+        <button
+          onClick={disconnectWallet}
+          className="flex items-center space-x-3 p-2 w-full rounded-lg transition-colors duration-200 hover:bg-gray-700"
+        >
+          <LogOut className="h-5 w-5" />
+          <span>Disconnect Wallet</span>
         </button>
       </div>
     </div>
