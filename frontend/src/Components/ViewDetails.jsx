@@ -26,6 +26,8 @@ const ViewDetails = () => {
 	const [isBookmarked, setIsBookmarked] = useState(false);
 	const { id: campaignId } = useParams();
 
+	console.log('campaign', campaign);
+
 	const getAllPosts = async () => {
 		const response = await fetch(
 			"https://crypto-crowdfunding-3go8.onrender.com/api/post/all-posts",
@@ -67,6 +69,8 @@ const ViewDetails = () => {
 				category: details.category,
 				donorList: details.donorList,
 			};
+
+			console.log('askdg', formattedCampaign?.donorList);
 
 			setCampaign(formattedCampaign);
 			setLoading(false);
