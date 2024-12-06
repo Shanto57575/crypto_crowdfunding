@@ -68,6 +68,8 @@ const ViewDetails = () => {
 				donorList: details.donorList,
 			};
 
+			console.log('askdg', formattedCampaign?.donorList);
+
 			setCampaign(formattedCampaign);
 			setLoading(false);
 		} catch (err) {

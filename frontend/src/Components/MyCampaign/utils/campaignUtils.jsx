@@ -62,6 +62,7 @@ export const fetchCampaigns = async (contract, userAddress) => {
                     status: campaign.status,
                     category: campaign.category,
                     canClaimed: campaign.canClaimed,
+                    donorList: campaign.donorList
                 };
             } catch (fetchError) {
                 console.error("Error fetching metadata:", fetchError);
