@@ -16,6 +16,7 @@ import {
 	TrendingUp,
 	BookPlus,
 	PanelRight,
+	Loader2,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -25,6 +26,7 @@ const Navbar = () => {
 	const location = useLocation();
 	const [scrolled, setScrolled] = useState(false);
 	const dashboardRef = useRef(null);
+	const [isConnecting, setIsConnecting] = useState(false);
 
 	// Handle scroll effect
 	useEffect(() => {
@@ -74,6 +76,17 @@ const Navbar = () => {
 		</div>
 	);
 
+	const handleConnectWallet = async () => {
+		setIsConnecting(true);
+		try {
+			await connectWallet();
+		} catch (error) {
+			console.error("Failed to connect wallet:", error);
+		} finally {
+			setIsConnecting(false);
+		}
+	};
+
 	return (
 		<nav
 			className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -115,25 +128,6 @@ const Navbar = () => {
 						{/* Dashboard Dropdown */}
 						{userAddress && (
 							<div className="relative" ref={dashboardRef}>
-								{/* <button
-									onClick={() => setIsDashboardOpen(!isDashboardOpen)}
-									className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 ${
-										isDashboardOpen ||
-										dashboardRoutes.some(
-											(route) => location.pathname === route.path
-										)
-											? "bg-gray-800 text-white"
-											: "text-gray-400 hover:bg-gray-800/50 hover:text-white"
-									}`}
-								>
-									<LayoutDashboard className="h-4 w-4" />
-									<span className="text-sm font-medium">Dashboard</span>
-									<ChevronDown
-										className={`h-4 w-4 transition-transform duration-200 ${
-											isDashboardOpen ? "rotate-180" : ""
-										}`}
-									/>
-								</button> */}
 								<Link
 									to={"/dashboard/dashboardHome"}
 									className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 text-gray-400 hover:bg-gray-800/50 hover:text-white"
@@ -180,11 +174,18 @@ const Navbar = () => {
 							</div>
 						) : (
 							<button
-								onClick={connectWallet}
-								className="hidden lg:flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition-all duration-200 transform hover:scale-[1.02]"
+								onClick={handleConnectWallet}
+								disabled={isConnecting}
+								className="hidden lg:flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
 							>
-								<Wallet className="h-5 w-5" />
-								<span className="text-sm font-medium">Connect Wallet</span>
+								{isConnecting ? (
+									<Loader2 className="h-5 w-5 animate-spin" />
+								) : (
+									<Wallet className="h-5 w-5" />
+								)}
+								<span className="text-sm font-medium">
+									{isConnecting ? "Connecting..." : "Connect Wallet"}
+								</span>
 							</button>
 						)}
 
@@ -223,13 +224,20 @@ const Navbar = () => {
 							) : (
 								<button
 									onClick={() => {
-										connectWallet();
+										handleConnectWallet();
 										setIsMenuOpen(false);
 									}}
-									className="w-full flex items-center justify-center space-x-2 px-6 py-3 mb-6 rounded-xl bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition-all duration-200"
+									disabled={isConnecting}
+									className="w-full flex items-center justify-center space-x-2 px-6 py-3 mb-6 rounded-xl bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
 								>
-									<Wallet className="h-5 w-5" />
-									<span>Connect Wallet</span>
+									{isConnecting ? (
+										<Loader2 className="h-5 w-5 animate-spin" />
+									) : (
+										<Wallet className="h-5 w-5" />
+									)}
+									<span>
+										{isConnecting ? "Connecting..." : "Connect Wallet"}
+									</span>
 								</button>
 							)}
 
@@ -251,32 +259,6 @@ const Navbar = () => {
 										<span className="font-medium">{item.name}</span>
 									</Link>
 								))}
-
-								{/* Dashboard Section */}
-								{/* {userAddress && (
-									<>
-										<div className="mt-6 mb-3 px-4">
-											<h2 className="text-sm font-semibold text-gray-400">
-												Dashboard
-											</h2>
-										</div>
-										{dashboardRoutes.map((item) => (
-											<Link
-												key={item.name}
-												to={item.path}
-												onClick={() => setIsMenuOpen(false)}
-												className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-													location.pathname === item.path
-														? "bg-gray-800 text-white"
-														: "text-gray-400 hover:bg-gray-800/50 hover:text-white"
-												}`}
-											>
-												<item.icon className="h-5 w-5" />
-												<span className="font-medium">{item.name}</span>
-											</Link>
-										))}
-									</>
-								)} */}
 							</div>
 						</div>
 					</div>

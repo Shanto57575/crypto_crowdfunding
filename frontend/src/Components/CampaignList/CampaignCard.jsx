@@ -50,7 +50,7 @@ export function CampaignCard({ campaign }) {
 					// Currency-specific minimum donation checks
 					if (donationCurrency === "BDT" && donationAmount < 10) {
 						toast.error(
-							<div className="text-center font-serif">
+							<div  className="text-center font-serif">
 								<p>
 									The minimum donation is{" "}
 									<span className="font-sans font-bold">10</span> BDT

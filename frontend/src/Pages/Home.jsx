@@ -215,7 +215,7 @@ const Home = () => {
 								<Orbit className="text-purple-300 w-8 h-8" />
 							</motion.div>
 							<p className="text-2xl text-gray-100 font-light">
-								Where Visionaries Meet Investors in the Web3 Space
+								Connecting Visionaries and Investors Across All Frontiers
 							</p>
 							<motion.div
 								initial={{ rotate: 180, opacity: 0 }}
@@ -245,7 +245,7 @@ const Home = () => {
 								Start Funding <ArrowUpRight className="w-5 h-5" />
 							</Link>
 							<Link
-								to="/create-campaign"
+								to="/dashboard/create-campaign"
 								className="border-2 border-blue-500 px-5 py-3 md:px-8 md:py-4 rounded-full font-semibold hover:bg-blue-600/20 backdrop-blur-sm transition-all"
 							>
 								Create campaign

@@ -8,7 +8,6 @@ const __dirname = dirname(__filename);
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        console.log("DHUKSI")
         cb(null, path.join(__dirname, "../public/uploads/posts"));
     },
     filename: function (req, file, cb) {
@@ -19,7 +18,6 @@ const storage = multer.diskStorage({
 
 // File filter configuration
 const fileFilter = (req, file, cb) => {
-    console.log("FILEFILTER", file)
     if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
         req.fileValidationError = "Only image files are allowed!";
         return cb(new Error("Only image files are allowed!"), false);
