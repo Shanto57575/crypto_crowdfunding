@@ -324,6 +324,7 @@ const ViewDetails = () => {
 														<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 															{post.images.map((image, idx) => (
 																<div key={idx + 1}>
+																	{console.log("image", image)}
 																	<img
 																		src={`https://crypto-crowdfunding-3go8.onrender.com${image}`}
 																		alt={`Post image ${idx + 1}`}
