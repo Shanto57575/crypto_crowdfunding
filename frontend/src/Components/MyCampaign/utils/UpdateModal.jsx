@@ -179,7 +179,6 @@ const UpdateModal = ({ isOpen, onClose, campaignId, post }) => {
 				throw new Error(responseData.message || "Failed to submit update");
 			}
 
-			// Reset states and close the modal
 			onClose();
 			setTitle("");
 			setDescription("");
