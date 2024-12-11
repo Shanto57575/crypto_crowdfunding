@@ -29,6 +29,7 @@ import {
 	Zap,
 } from "lucide-react";
 import ChainChat from "../Components/ChainChat";
+import { Featured } from "../Components/Featured";
 
 const benefits = [
 	{
@@ -390,110 +391,7 @@ const Home = () => {
 			{/* Featured Projects */}
 			<section className="py-20 bg-black/50">
 				<div className="container mx-auto px-6">
-					<h2 className="text-4xl font-bold text-center mb-16">
-						Featured Projects
-					</h2>
-					<div className="grid md:grid-cols-3 gap-8">
-						<div className="rounded-xl overflow-hidden bg-gray-800/50 hover:bg-gray-800/80 transition-all group">
-							<div className="relative">
-								<img
-									src="https://t4.ftcdn.net/jpg/02/99/70/57/240_F_299705711_auOvoTZv6yKdg1xsdePbWMvTpC83FqZg.jpg"
-									alt="Project"
-									className="w-full h-64 object-cover"
-								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-							</div>
-							<div className="p-6">
-								<div className="flex justify-between items-start mb-4">
-									<div>
-										<h3 className="text-xl font-semibold mb-2">
-											Project Title
-										</h3>
-										<span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
-											Category
-										</span>
-									</div>
-									<div className="text-right">
-										<span className="text-green-400">75% Funded</span>
-										<p className="text-sm text-gray-400">12 days left</p>
-									</div>
-								</div>
-								<div className="w-full h-2 bg-gray-700 rounded-full mb-4">
-									<div className="w-3/4 h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
-								</div>
-								<div className="flex justify-between text-sm text-gray-400">
-									<span>Raised: $37,500</span>
-									<span>Goal: $50,000</span>
-								</div>
-							</div>
-						</div>
-						<div className="rounded-xl overflow-hidden bg-gray-800/50 hover:bg-gray-800/80 transition-all group">
-							<div className="relative">
-								<img
-									src="https://t3.ftcdn.net/jpg/07/19/14/36/240_F_719143618_hwdmyu52H3MyFjSk8oYpPAXvglrkhIJY.jpg"
-									alt="Project"
-									className="w-full h-64 object-cover"
-								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-							</div>
-							<div className="p-6">
-								<div className="flex justify-between items-start mb-4">
-									<div>
-										<h3 className="text-xl font-semibold mb-2">
-											Project Title
-										</h3>
-										<span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
-											Category
-										</span>
-									</div>
-									<div className="text-right">
-										<span className="text-green-400">75% Funded</span>
-										<p className="text-sm text-gray-400">12 days left</p>
-									</div>
-								</div>
-								<div className="w-full h-2 bg-gray-700 rounded-full mb-4">
-									<div className="w-3/4 h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
-								</div>
-								<div className="flex justify-between text-sm text-gray-400">
-									<span>Raised: $37,500</span>
-									<span>Goal: $50,000</span>
-								</div>
-							</div>
-						</div>
-						<div className="rounded-xl overflow-hidden bg-gray-800/50 hover:bg-gray-800/80 transition-all group">
-							<div className="relative">
-								<img
-									src="https://t3.ftcdn.net/jpg/04/72/72/26/240_F_472722650_jFvy5srIS6gemjYdK7uPhH7bQk38QDSe.jpg"
-									alt="Project"
-									className="w-full h-64 object-cover"
-								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-							</div>
-							<div className="p-6">
-								<div className="flex justify-between items-start mb-4">
-									<div>
-										<h3 className="text-xl font-semibold mb-2">
-											Project Title
-										</h3>
-										<span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
-											Category
-										</span>
-									</div>
-									<div className="text-right">
-										<span className="text-green-400">75% Funded</span>
-										<p className="text-sm text-gray-400">12 days left</p>
-									</div>
-								</div>
-								<div className="w-full h-2 bg-gray-700 rounded-full mb-4">
-									<div className="w-3/4 h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
-								</div>
-								<div className="flex justify-between text-sm text-gray-400">
-									<span>Raised: $37,500</span>
-									<span>Goal: $50,000</span>
-								</div>
-							</div>
-						</div>
-					</div>
+					<Featured />
 				</div>
 			</section>
 

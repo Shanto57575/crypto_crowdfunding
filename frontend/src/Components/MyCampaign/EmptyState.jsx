@@ -17,7 +17,7 @@ const EmptyState = () => (
 						Start your fundraising journey today
 					</p>
 				</div>
-				<Link to="/create-campaign">
+				<Link to="/dashboard/create-campaign">
 					<button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2">
 						Create Your First Campaign
 						<ChevronRight className="w-5 h-5" />

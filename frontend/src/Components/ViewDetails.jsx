@@ -26,8 +26,6 @@ const ViewDetails = () => {
 	const [isBookmarked, setIsBookmarked] = useState(false);
 	const { id: campaignId } = useParams();
 
-	console.log('campaign', campaign);
-
 	const getAllPosts = async () => {
 		const response = await fetch(
 			"https://crypto-crowdfunding-3go8.onrender.com/api/post/all-posts",
@@ -35,11 +33,9 @@ const ViewDetails = () => {
 				method: "GET",
 			}
 		);
-		console.log(response);
 
 		const responseData = await response.json();
 		setAllPosts(responseData.filter((data) => data.campaignId === campaignId));
-		console.log("responseData", responseData);
 	};
 
 	useEffect(() => {
@@ -70,7 +66,7 @@ const ViewDetails = () => {
 				donorList: details.donorList,
 			};
 
-			console.log('askdg', formattedCampaign?.donorList);
+			console.log("askdg", formattedCampaign?.donorList);
 
 			setCampaign(formattedCampaign);
 			setLoading(false);
@@ -324,7 +320,6 @@ const ViewDetails = () => {
 														<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 															{post.images.map((image, idx) => (
 																<div key={idx + 1}>
-																	{console.log("image", image)}
 																	<img
 																		src={`https://crypto-crowdfunding-3go8.onrender.com${image}`}
 																		alt={`Post image ${idx + 1}`}

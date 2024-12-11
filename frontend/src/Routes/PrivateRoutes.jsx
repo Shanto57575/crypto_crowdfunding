@@ -15,7 +15,7 @@ const PrivateRoutes = () => {
 		const userAddress = localStorage.getItem("userAddress");
 
 		if (!token || !userAddress) {
-			toast.error(<p className="font-serif">Wallet is not connected!</p>);
+			toast.error(<p className="font-serif">please connect your Wallet!</p>);
 			setLoading(false);
 			navigate("/", { replace: true });
 			return;

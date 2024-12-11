@@ -30,7 +30,6 @@ const MyDonation = () => {
 				contract.getMyDonations(),
 				contract.getMyDonationTotals(),
 			]);
-			console.log(totalsData);
 
 			const formattedDonations = donationData.map((donation) => ({
 				campaignId: donation.campaignId,

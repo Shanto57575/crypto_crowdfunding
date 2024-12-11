@@ -1,22 +1,16 @@
 import Post from "../models/post.model.js";
 
 export const createPost = async (req, res) => {
-    console.log("req.files:", req.files);
-    console.log("req.body:", req.body);
-
     try {
         const { campaignId, title, description } = req.body;
 
         const imagePaths = req.files.map((file) => `/uploads/posts/${file.filename}`);
-        console.log("imagePaths", imagePaths)
         const newPost = new Post({
             campaignId,
             title,
             description,
             images: imagePaths,
         });
-        console.log("newPost", newPost)
-
         const savedPost = await newPost.save();
 
         res.status(201).json({

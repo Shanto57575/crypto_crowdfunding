@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
-import { CampaignCard } from "./CampaignCard";
-import { SearchFilter } from "./SearchFilter";
 import { Sparkles } from "lucide-react";
 import { ethers } from "ethers";
-import { getContract } from "../../helper/contract";
-import toast from "react-hot-toast";
+import { CampaignCard } from "./CampaignList/CampaignCard";
+import { getContract } from "../helper/contract";
 
-export function CampaignList() {
+export function Featured() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [allCampaigns, setAllCampaigns] = useState([]);
-	const [filteredCampaigns, setFilteredCampaigns] = useState([]);
-	const [filter, setFilter] = useState("all");
-	const [searchTerm, setSearchTerm] = useState("");
+
+	useEffect(() => {
+		fetchAllCampaigns();
+	}, []);
 
 	const fetchIPFSData = async (hash) => {
 		try {
@@ -60,50 +59,17 @@ export function CampaignList() {
 			);
 
 			setAllCampaigns(campaignsWithData);
-			setFilteredCampaigns(campaignsWithData);
 		} catch (err) {
 			console.error("Error fetching campaigns:", err);
 			setError(err.message || "Failed to fetch campaigns");
-			toast.error(err.message || "Failed to fetch campaigns");
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	useEffect(() => {
-		fetchAllCampaigns();
-	}, []);
-
-	const handleFilterChange = (selectedValue) => {
-		setFilter(selectedValue);
-
-		if (selectedValue === "All Campaigns") {
-			setFilteredCampaigns(allCampaigns);
-		} else {
-			const filtered = allCampaigns.filter(
-				(campaign) => campaign.category.toString() === selectedValue
-			);
-			setFilteredCampaigns(filtered);
-		}
-	};
-
-	const handleSearch = (term) => {
-		setSearchTerm(term);
-		const searchResults = allCampaigns.filter((campaign) => {
-			const searchableText =
-				`${campaign.title} ${campaign.description} ${campaign.owner} ${campaign.category}`.toLowerCase();
-			return searchableText.includes(term.toLowerCase());
-		});
-		setFilteredCampaigns(searchResults);
-	};
-
-	const refreshCampaigns = () => {
-		fetchAllCampaigns();
-	};
-
 	if (loading) {
 		return (
-			<div className="min-h-screen bg-gray-900 flex justify-center items-center">
+			<div className="flex justify-center items-center">
 				<div className="relative">
 					<div className="w-20 h-20 relative">
 						<div className="absolute inset-0 rounded-full border-t-2 border-indigo-500 animate-spin"></div>
@@ -134,56 +100,25 @@ export function CampaignList() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 pt-28">
+		<div className="py-12 px-4 sm:px-6 lg:px-8 pt-28">
 			<div className="max-w-7xl mx-auto space-y-12">
 				<div className="text-center space-y-8">
 					<div className="space-y-4">
 						<h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-							Discover Campaigns
+							Featured Campaigns
 						</h1>
 						<p className="text-gray-400 max-w-2xl mx-auto text-lg">
 							Support innovative projects & make a difference in the community
 						</p>
 					</div>
-					<SearchFilter
-						filter={filter}
-						searchTerm={searchTerm}
-						onFilterChange={handleFilterChange}
-						onSearch={handleSearch}
-					/>
 				</div>
 			</div>
 
-			{filteredCampaigns.length === 0 ? (
-				<div className="flex justify-center items-center min-h-[60vh]">
-					<div className="bg-gray-800 border border-gray-700 rounded-2xl p-12 max-w-lg mx-auto text-center space-y-6">
-						<div className="relative w-16 h-16 mx-auto">
-							<div className="absolute inset-0 bg-indigo-500/20 rounded-full animate-ping"></div>
-							<div className="relative flex items-center justify-center">
-								<Sparkles className="w-8 h-8 text-indigo-400" />
-							</div>
-						</div>
-						<h2 className="text-3xl font-bold bg-gradient-to-r from-gray-100 to-gray-400 bg-clip-text text-transparent">
-							{searchTerm ? "No Matching Campaigns" : "No Campaigns Yet"}
-						</h2>
-						<p className="text-gray-500">
-							{searchTerm
-								? "Try adjusting your search terms"
-								: "Be the first to start a campaign!"}
-						</p>
-					</div>
-				</div>
-			) : (
-				<div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mx-auto w-fit mt-10">
-					{filteredCampaigns.map((campaign) => (
-						<CampaignCard
-							key={campaign.id}
-							campaign={campaign}
-							onSuccessfulAction={refreshCampaigns}
-						/>
-					))}
-				</div>
-			)}
+			<div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mx-auto w-fit mt-10">
+				{allCampaigns.slice(0, 3).map((campaign) => (
+					<CampaignCard key={campaign.id} campaign={campaign} />
+				))}
+			</div>
 		</div>
 	);
 }

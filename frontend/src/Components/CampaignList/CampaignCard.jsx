@@ -17,7 +17,7 @@ import toast from "react-hot-toast";
 import { getContract } from "../../helper/contract";
 import { serializeError } from "@metamask/rpc-errors";
 
-export function CampaignCard({ campaign }) {
+export function CampaignCard({ campaign, onSuccessfulAction }) {
 	const [donationAmount, setDonationAmount] = useState("");
 	const [donationCurrency, setDonationCurrency] = useState("ETH");
 	const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +50,7 @@ export function CampaignCard({ campaign }) {
 					// Currency-specific minimum donation checks
 					if (donationCurrency === "BDT" && donationAmount < 10) {
 						toast.error(
-							<div  className="text-center font-serif">
+							<div className="text-center font-serif">
 								<p>
 									The minimum donation is{" "}
 									<span className="font-sans font-bold">10</span> BDT
@@ -78,7 +78,6 @@ export function CampaignCard({ campaign }) {
 				}
 			}
 
-			// ETH-specific minimum check
 			if (donationCurrency === "ETH" && donationAmount < 0.00025) {
 				toast.error(
 					<div className="text-center font-serif">
@@ -136,6 +135,9 @@ export function CampaignCard({ campaign }) {
 						</p>
 					</div>
 				);
+				if (onSuccessfulAction) {
+					onSuccessfulAction();
+				}
 				setDonationAmount("");
 			} catch (contractErr) {
 				const error = serializeError(contractErr);
@@ -238,6 +240,9 @@ export function CampaignCard({ campaign }) {
 			toast.success(
 				<h1 className="text-center font-serif">Funds Claimed Successfully</h1>
 			);
+			if (onSuccessfulAction) {
+				onSuccessfulAction();
+			}
 		} catch (err) {
 			const error = serializeError(err);
 			console.error("Claim funds error:", error);

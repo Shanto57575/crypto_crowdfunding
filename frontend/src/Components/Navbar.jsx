@@ -11,10 +11,7 @@ import {
 	Users,
 	Compass,
 	LayoutDashboard,
-	Settings,
 	History,
-	TrendingUp,
-	BookPlus,
 	PanelRight,
 	Loader2,
 } from "lucide-react";
@@ -53,9 +50,14 @@ const Navbar = () => {
 
 	const mainRoutes = [
 		{ name: "Home", path: "/", icon: Home },
-		{ name: "Blog", path: "/blog", icon: BookPlus },
+		// { name: "Blog", path: "/blog", icon: BookPlus },
 		{ name: "User Guide", path: "/user-guide", icon: PanelRight },
 		{ name: "Explore", path: "/all-campaigns", icon: Compass },
+		{
+			name: "Dashboard",
+			path: "/dashboard/dashboardHome",
+			icon: LayoutDashboard,
+		},
 	];
 
 	const dashboardRoutes = [
@@ -63,8 +65,6 @@ const Navbar = () => {
 		{ name: "My Campaigns", path: "/my-campaigns", icon: Users },
 		{ name: "Create Campaign", path: "/create-campaign", icon: PlusCircle },
 		{ name: "My Donations", path: "/my-donation", icon: History },
-		{ name: "Analytics", path: "/analytics", icon: TrendingUp },
-		{ name: "Settings", path: "/settings", icon: Settings },
 	];
 
 	const AddressDisplay = ({ address, className = "" }) => (
@@ -128,14 +128,7 @@ const Navbar = () => {
 						{/* Dashboard Dropdown */}
 						{userAddress && (
 							<div className="relative" ref={dashboardRef}>
-								<Link
-									to={"/dashboard/dashboardHome"}
-									className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 text-gray-400 hover:bg-gray-800/50 hover:text-white"
-								>
-									Dashboard
-								</Link>
-
-								{/* Dashboard Menu */}
+								{/* Dashboard Large */}
 								{isDashboardOpen && (
 									<div className="absolute top-full right-0 mt-2 w-56 rounded-xl bg-gray-900 border border-gray-800 shadow-xl py-2">
 										{dashboardRoutes.map((item) => (
@@ -240,7 +233,6 @@ const Navbar = () => {
 									</span>
 								</button>
 							)}
-
 							{/* Mobile Navigation Links */}
 							<div className="space-y-2">
 								{/* Main Routes */}

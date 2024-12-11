@@ -4,26 +4,19 @@ import blogUpload from '../utils/multerConfig.js';
 
 // Create a new blog
 export const addBlog = async (req, res) => {
-    console.log("=== START: addBlog function ===");
-    
     try {
         // Use blog-specific multer upload middleware for single image
-        blogUpload.single('image')(req, res, async function(err) {
+        blogUpload.single('image')(req, res, async function (err) {
             if (err) {
                 console.error("Multer error:", err);
                 return res.status(400).json({
                     error: err.message || 'Error uploading file'
                 });
             }
-
-            console.log("File received:", req.file);
-            console.log("Body received:", req.body);
-
             const { title, content, author, tags, userAddress } = req.body;
 
             // Validate required fields
             if (!title || !content || !author || !tags || !userAddress || !req.file) {
-                console.log("Missing required fields");
                 return res.status(400).json({
                     error: 'All fields including image are required'
                 });
@@ -34,7 +27,6 @@ export const addBlog = async (req, res) => {
 
             // Create image path
             const imagePath = `/uploads/blogs/${req.file.filename}`;
-            console.log("Image path:", imagePath);
 
             // Create blog post
             const blog = await Blog.create({
@@ -45,18 +37,12 @@ export const addBlog = async (req, res) => {
                 image: imagePath,
                 userAddress
             });
-
-            console.log("Blog created successfully:", blog);
-            console.log("=== END: addBlog function (Success) ===");
-
             res.status(201).json({
                 message: 'Blog created successfully',
                 data: blog
             });
         });
     } catch (error) {
-        console.error("Error in addBlog:", error);
-        console.log("=== END: addBlog function (Error) ===");
         res.status(500).json({
             error: 'An error occurred while creating the blog',
             details: error.message
@@ -121,12 +107,6 @@ export const singleBlog = async (req, res) => {
 
 // Update a blog by ID
 export const updateBlog = async (req, res) => {
-    console.log("Update request - Full Details:", {
-        id: req.params.id,
-        body: req.body,
-        files: req.files
-    });
-
     try {
         const { id } = req.params;
 

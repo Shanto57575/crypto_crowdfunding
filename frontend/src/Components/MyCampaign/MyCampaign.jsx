@@ -57,7 +57,7 @@ const MyCampaign = () => {
 						<p className="text-gray-400">
 							Managing {campaigns.length} active fundraising campaigns
 						</p>
-						<Link to="/create-campaign">
+						<Link to="/dashboard/create-campaign">
 							<button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all">
 								<PlusCircle className="w-4 h-4" />
 								New Campaign

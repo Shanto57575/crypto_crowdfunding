@@ -125,7 +125,7 @@ const MyCampaignCard = ({
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
-			className="group relative bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-900 transition-all duration-300"
+			className="group relative bg-gray-900 w-full mx-auto rounded-xl overflow-hidden border border-gray-800 hover:border-purple-900 transition-all duration-300"
 		>
 			<div className="aspect-video relative">
 				<img
