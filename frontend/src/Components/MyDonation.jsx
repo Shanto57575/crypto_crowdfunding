@@ -30,29 +30,55 @@ const MyDonation = () => {
 				contract.getMyDonations(),
 				contract.getMyDonationTotals(),
 			]);
+			console.log(totalsData);
 
-			const formattedDonations = donationData.map((donation) => ({
-				campaignId: donation.campaignId,
-				amount: ethers.formatEther(donation.amount),
-				timestamp: new Date(
-					Number(donation.timestamp) * 1000
-				).toLocaleDateString(),
-				category: donation.category,
-				isRefunded: donation.isRefunded,
-			}));
+			const formattedDonations = donationData.map((donation) => {
+				const amountInEth = ethers.formatEther(donation.amount);
+				const displayAmount =
+					parseFloat(amountInEth) < 0.00000001
+						? `${ethers.formatUnits(donation.amount, "gwei")} Gwei`
+						: `${parseFloat(amountInEth).toFixed(6)} ETH`;
+
+				return {
+					campaignId: donation.campaignId,
+					amount: displayAmount,
+					rawAmount: parseFloat(amountInEth), // Store raw ETH amount for calculations
+					timestamp: new Date(
+						Number(donation.timestamp) * 1000
+					).toLocaleDateString(),
+					category: donation.category,
+					isRefunded: donation.isRefunded,
+				};
+			});
 
 			const totalDonated = formattedDonations.reduce(
-				(sum, d) => sum + parseFloat(d.amount),
+				(sum, d) => sum + d.rawAmount,
 				0
 			);
+
 			const campaignCount = new Set(formattedDonations.map((d) => d.campaignId))
 				.size;
 
+			const averageDonation =
+				formattedDonations.length > 0
+					? totalDonated / formattedDonations.length
+					: 0;
+
 			setDonations(formattedDonations);
 			setStats({
-				totalDonated,
+				totalDonated:
+					totalDonated > 0
+						? totalDonated < 0.00000001
+							? `${(totalDonated * 1_000_000_000).toFixed(2)} Gwei`
+							: `${totalDonated.toFixed(6)} ETH`
+						: "0 ETH",
 				campaignCount,
-				averageDonation: totalDonated / campaignCount || 0,
+				averageDonation:
+					averageDonation > 0
+						? averageDonation < 0.00000001
+							? `${(averageDonation * 1_000_000_000).toFixed(2)} Gwei`
+							: `${averageDonation.toFixed(6)} ETH`
+						: "0 ETH",
 			});
 		} catch (error) {
 			console.error("Donation fetch failed", error);
@@ -74,11 +100,7 @@ const MyDonation = () => {
 					<TrendingUp className="w-5 h-5 mr-2 text-purple-400" />
 					Impact Dashboard
 				</div>
-				<h1
-					className="text-4xl sm:text-5xl font-black bg-clip-text text-transparent 
-          bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 
-          animate-text-shimmer"
-				>
+				<h1 className="text-4xl sm:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 animate-text-shimmer">
 					Your Contribution Journey
 				</h1>
 				<p className="text-white/60 max-w-xl mx-auto text-sm sm:text-base">
@@ -91,7 +113,7 @@ const MyDonation = () => {
 				{[
 					{
 						icon: <Wallet className="w-8 h-8 text-purple-400" />,
-						value: `${stats.totalDonated.toFixed(3)} ETH`,
+						value: `${stats.totalDonated}`,
 						label: "Total Donated",
 						bgClass: "from-purple-900/50 to-indigo-900/50",
 					},
@@ -103,7 +125,7 @@ const MyDonation = () => {
 					},
 					{
 						icon: <PieChart className="w-8 h-8 text-indigo-400" />,
-						value: `${stats.averageDonation.toFixed(2)} ETH`,
+						value: `${stats.averageDonation}`,
 						label: "Avg Donation",
 						bgClass: "from-indigo-900/50 to-blue-900/50",
 					},
@@ -234,7 +256,7 @@ const MyDonation = () => {
 														Amount
 													</p>
 													<p className="font-bold text-purple-300 text-sm sm:text-lg">
-														{donation.amount} ETH
+														{donation.amount}
 													</p>
 												</div>
 												<div>
